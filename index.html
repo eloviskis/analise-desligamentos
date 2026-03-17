@@ -621,6 +621,13 @@
     font-family: var(--font-body); transition: all 0.15s;
   }
   .btn-remove-user:hover { background: rgba(232,80,80,0.1); border-color: var(--danger); }
+  .btn-change-pass {
+    background: none; border: 1px solid rgba(56,210,180,0.2); color: var(--accent2);
+    font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.15s;
+  }
+  .btn-change-pass:hover { background: rgba(56,210,180,0.1); border-color: var(--accent2); }
+  .user-mgmt-actions { display: flex; gap: 6px; align-items: center; }
 
   @media (max-width: 640px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; }
@@ -1340,9 +1347,52 @@ function renderUserManagement() {
         <span class="nav-user-badge role-${u.role}" style="font-size:10px;">${u.role === 'admin' ? 'Admin' : 'Viewer'}</span>
         ${isSelf ? '<span style="font-size:11px;color:var(--accent2);">(você)</span>' : ''}
       </div>
-      ${!isSelf ? '<button class="btn-remove-user" onclick="removeUser(\'' + escapeHtml(u.username) + '\')">Remover</button>' : ''}
+      <div class="user-mgmt-actions">
+        <button class="btn-change-pass" onclick="promptChangePassword('${escapeHtml(u.username)}')">🔑 Trocar senha</button>
+        ${!isSelf ? '<button class="btn-remove-user" onclick="removeUser(\'' + escapeHtml(u.username) + '\')">Remover</button>' : ''}
+      </div>
     </div>`;
   }).join('');
+}
+
+// ——— TROCAR SENHA ———
+function promptChangePassword(username) {
+  if (!isAdmin()) return;
+  const overlay = document.getElementById('confirm-overlay');
+  const title = document.getElementById('confirm-title');
+  const desc = document.getElementById('confirm-desc');
+  const actionBtn = document.getElementById('confirm-action');
+  title.textContent = 'Trocar senha de ' + username;
+  desc.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+      <input type="password" id="new-pass-input" placeholder="Nova senha (mín. 4 caracteres)" 
+        style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;">
+      <input type="password" id="confirm-pass-input" placeholder="Confirmar nova senha" 
+        style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;">
+    </div>`;
+  actionBtn.textContent = 'Alterar senha';
+  actionBtn.onclick = async () => {
+    const newPass = document.getElementById('new-pass-input').value;
+    const confirmPass = document.getElementById('confirm-pass-input').value;
+    if (!newPass || newPass.length < 4) {
+      showToast('⚠ Senha precisa ter pelo menos 4 caracteres', 'danger');
+      return;
+    }
+    if (newPass !== confirmPass) {
+      showToast('⚠ As senhas não conferem', 'danger');
+      return;
+    }
+    const hash = await hashPassword(newPass);
+    const users = getUsers();
+    const user = users.find(u => u.username === username);
+    if (user) {
+      user.passwordHash = hash;
+      saveUsers(users);
+      closeConfirm();
+      showToast('✓ Senha de ' + username + ' alterada com sucesso', 'info');
+    }
+  };
+  overlay.classList.add('active');
 }
 
 // ——— EXECUTIVE REPORT EXPORT ———
