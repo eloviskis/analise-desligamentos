@@ -1477,7 +1477,9 @@ function promptChangePassword(username) {
         style="padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:13px;">
     </div>`;
   actionBtn.textContent = 'Alterar senha';
-  actionBtn.onclick = async () => {
+  confirmCallback = null;
+  actionBtn.onclick = async (e) => {
+    e.stopImmediatePropagation();
     const newPass = document.getElementById('new-pass-input').value;
     const confirmPass = document.getElementById('confirm-pass-input').value;
     if (!newPass || newPass.length < 4) {
@@ -1495,10 +1497,11 @@ function promptChangePassword(username) {
       user.passwordHash = hash;
       saveUsers(users);
       closeConfirm();
+      actionBtn.onclick = null;
       showToast('✓ Senha de ' + username + ' alterada com sucesso', 'info');
     }
   };
-  overlay.classList.add('active');
+  overlay.classList.add('show');
 }
 
 // ——— EXECUTIVE REPORT EXPORT ———
