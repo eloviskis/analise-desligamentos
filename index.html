@@ -493,6 +493,52 @@
   .confirm-dialog p { font-size: 14px; color: var(--muted); margin-bottom: 1.5rem; }
   .confirm-btns { display: flex; gap: 10px; justify-content: center; }
 
+  /* SUGGESTIONS */
+  .suggestions-section { margin-bottom: 1.5rem; }
+  .suggestions-list { display: flex; flex-direction: column; gap: 10px; }
+  .suggestion-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+    transition: border-color 0.15s;
+  }
+  .suggestion-card:hover { border-color: var(--border2); }
+  .suggestion-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+  .suggestion-body { flex: 1; }
+  .suggestion-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .suggestion-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .suggestion-tag {
+    display: inline-flex; font-size: 10px; font-weight: 600; padding: 3px 9px;
+    border-radius: 20px; background: rgba(109,216,74,0.1); color: var(--success);
+    margin-top: 8px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+
+  /* ADMIN PEOPLE */
+  .admin-people-grid { display: flex; flex-direction: column; gap: 8px; }
+  .admin-person-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem; flex-wrap: wrap;
+  }
+  .admin-person-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 200px; }
+  .admin-person-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface); display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--accent2); border: 1px solid var(--border2);
+    flex-shrink: 0;
+  }
+  .admin-person-name { font-weight: 600; font-size: 14px; }
+  .admin-person-meta { font-size: 12px; color: var(--muted); }
+  .admin-person-actions { display: flex; gap: 8px; align-items: center; }
+  .btn-admin-delete {
+    background: rgba(232,80,80,0.08); border: 1px solid rgba(232,80,80,0.2);
+    color: var(--danger); font-size: 12px; font-weight: 500;
+    padding: 6px 14px; border-radius: 8px; cursor: pointer;
+    transition: all 0.15s; font-family: var(--font-body);
+  }
+  .btn-admin-delete:hover { background: rgba(232,80,80,0.15); border-color: var(--danger); }
+
   @media (max-width: 640px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; }
     nav { padding: 0 1rem; }
@@ -943,6 +989,15 @@
         <div class="action-list" id="action-list"></div>
       </div>
 
+      <!-- SUGESTÕES PREVENTIVAS -->
+      <div class="suggestions-section" id="suggestions-section">
+        <div class="section-head">
+          <h3>💡 Sugestões preventivas</h3>
+          <span>Recomendações para evitar futuros desligamentos pelos mesmos motivos</span>
+        </div>
+        <div class="suggestions-list" id="suggestions-list"></div>
+      </div>
+
       <!-- RESPONSES TABLE -->
       <div class="chart-card" style="margin-top:0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -957,6 +1012,17 @@
             <tbody id="resp-tbody"></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ÁREA ADMINISTRATIVA -->
+      <div class="chart-card" style="margin-top:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="chart-title" style="margin-bottom:4px;">⚙️ Área administrativa</div>
+            <div class="chart-sub" style="margin-bottom:0;">Gerencie as avaliações por pessoa — exclua seletivamente</div>
+          </div>
+        </div>
+        <div id="admin-people-list" class="admin-people-grid"></div>
       </div>
     </div>
   </div>
@@ -977,8 +1043,114 @@
 <div class="toast" id="toast">✓ Resposta salva com sucesso!</div>
 
 <script>
+// ——— MOCK DATA SEED ———
+const MOCK_SEED = [
+  {
+    id: 1001, gestor: 'Maria Fernanda', time: 'Time Condado', periodo: 'Janeiro 2026',
+    motivo: 'Performance técnica abaixo do esperado',
+    feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria',
+    expectativas: 'Parcialmente claras',
+    matrizResp: 1, matrizEntrega: 2, matrizCultura: 1, matrizComm: 2,
+    sinais: 'Sim, sinais claros e recorrentes',
+    sinaisTipos: ['Baixa produtividade ou entregas atrasadas','Problemas de comunicação','Baixo engajamento ou comprometimento'],
+    sinaisDiscussao: 'Não foram discutidos',
+    onboarding: 'Não — o profissional foi inserido sem estrutura',
+    buddy: 'Não — foi deixado por conta própria',
+    onbObs: 'Não teve onboarding formal, foi direto para o projeto sem documentação.',
+    ambiente: 'Dificultava — ambiente com tensões ou problemas',
+    lideranca: 2, perfil: 'Não — houve erro no processo seletivo',
+    selecaoCultural: 'Não — foco apenas técnico',
+    melhorias: ['Processo de contratação / critérios de seleção','Onboarding e integração','Comunicação e feedback contínuo','Liderança e gestão do time'],
+    obs: 'Case crítico com múltiplas falhas sistêmicas.',
+    ts: '15/01/2026', score: 23, risk: 'alto'
+  },
+  {
+    id: 1002, gestor: 'Carlos Eduardo', time: 'Engenharia Backend', periodo: 'Fevereiro 2026',
+    motivo: 'Performance comportamental / atitude',
+    feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado',
+    expectativas: 'Totalmente claras e documentadas',
+    matrizResp: 0, matrizEntrega: 0, matrizCultura: 1, matrizComm: 0,
+    sinais: 'Sim, mas sutis e difíceis de perceber',
+    sinaisTipos: ['Dificuldade de colaboração com o time','Conflitos interpessoais'],
+    sinaisDiscussao: 'Sim, abordados prontamente',
+    onboarding: 'Sim, bem estruturado com marcos e acompanhamento',
+    buddy: 'Sim, teve buddy/mentor e acompanhamento',
+    onbObs: '',
+    ambiente: 'Ajudava — ambiente saudável e colaborativo',
+    lideranca: 4, perfil: 'Parcialmente alinhado',
+    selecaoCultural: 'Parcialmente — só intuição do entrevistador',
+    melhorias: ['Cultura organizacional'],
+    obs: '',
+    ts: '10/02/2026', score: 1, risk: 'baixo'
+  },
+  {
+    id: 1003, gestor: 'Ana Beatriz', time: 'Produto', periodo: 'Março 2026',
+    motivo: 'Desalinhamento cultural',
+    feedback: 'Parcialmente — só conversas informais', pip: 'Tentativa informal, sem estrutura',
+    expectativas: 'Parcialmente claras',
+    matrizResp: 0, matrizEntrega: 1, matrizCultura: 2, matrizComm: 1,
+    sinais: 'Sim, sinais claros e recorrentes',
+    sinaisTipos: ['Problemas de comunicação','Qualidade técnica abaixo do esperado','Baixo engajamento ou comprometimento'],
+    sinaisDiscussao: 'Não foram discutidos',
+    onboarding: 'Parcialmente — processo informal ou incompleto',
+    buddy: 'Parcialmente — apoio limitado',
+    onbObs: 'Buddy ficou disponível só na primeira semana.',
+    ambiente: 'Neutro — sem impacto positivo ou negativo',
+    lideranca: 3, perfil: 'Sim, perfil correto para a função',
+    selecaoCultural: 'Parcialmente — só intuição do entrevistador',
+    melhorias: ['Clareza de expectativas do cargo','Comunicação e feedback contínuo','Acompanhamento de performance','Cultura organizacional'],
+    obs: 'Caso intermediário com pontos de atenção no acompanhamento.',
+    ts: '05/03/2026', score: 6, risk: 'medio'
+  },
+  {
+    id: 1004, gestor: 'Ricardo Mendes', time: 'Comercial', periodo: 'Março 2026',
+    motivo: 'Reestruturação do time',
+    feedback: 'Parcialmente — só conversas informais', pip: 'Não houve plano de melhoria',
+    expectativas: 'Não estavam claras',
+    matrizResp: 2, matrizEntrega: 1, matrizCultura: 0, matrizComm: 2,
+    sinais: 'Não — surgiu de forma repentina',
+    sinaisTipos: [],
+    sinaisDiscussao: 'Não foram discutidos',
+    onboarding: 'Parcialmente — processo informal ou incompleto',
+    buddy: 'Parcialmente — apoio limitado',
+    onbObs: 'Processo de onboarding foi feito às pressas por falta de tempo do gestor.',
+    ambiente: 'Dificultava — ambiente com tensões ou problemas',
+    lideranca: 1, perfil: 'Parcialmente alinhado',
+    selecaoCultural: 'Não — foco apenas técnico',
+    melhorias: ['Processo de contratação / critérios de seleção','Clareza de expectativas do cargo','Liderança e gestão do time','Cultura organizacional'],
+    obs: 'Reestruturação foi necessária mas faltou planejamento.',
+    ts: '12/03/2026', score: 15, risk: 'alto'
+  },
+  {
+    id: 1005, gestor: 'Juliana Costa', time: 'Design', periodo: 'Janeiro 2026',
+    motivo: 'Mudança estratégica da empresa',
+    feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado',
+    expectativas: 'Totalmente claras e documentadas',
+    matrizResp: 0, matrizEntrega: 0, matrizCultura: 0, matrizComm: 0,
+    sinais: 'Sim, mas sutis e difíceis de perceber',
+    sinaisTipos: ['Baixo engajamento ou comprometimento'],
+    sinaisDiscussao: 'Sim, abordados prontamente',
+    onboarding: 'Sim, bem estruturado com marcos e acompanhamento',
+    buddy: 'Sim, teve buddy/mentor e acompanhamento',
+    onbObs: '',
+    ambiente: 'Ajudava — ambiente saudável e colaborativo',
+    lideranca: 5, perfil: 'Sim, perfil correto para a função',
+    selecaoCultural: 'Sim, com avaliação cultural estruturada',
+    melhorias: [],
+    obs: 'Desligamento por mudança estratégica. Sem falhas sistêmicas.',
+    ts: '20/01/2026', score: 0, risk: 'baixo'
+  }
+];
+
 // ——— STATE ———
-let responses = JSON.parse(localStorage.getItem('deslig-responses') || '[]');
+let storedData = localStorage.getItem('deslig-responses');
+let responses;
+if (storedData) {
+  responses = JSON.parse(storedData);
+} else {
+  responses = JSON.parse(JSON.stringify(MOCK_SEED));
+  localStorage.setItem('deslig-responses', JSON.stringify(responses));
+}
 let currentSection = 1;
 let matrices = {};
 let scales = {};
@@ -1352,7 +1524,9 @@ function renderDashboard() {
   renderKPIs(data);
   renderCharts(data);
   renderActions(data);
+  renderSuggestions(data);
   renderTable(data);
+  renderAdminPeople();
 }
 
 function renderKPIs(data) {
@@ -1620,6 +1794,154 @@ function renderTable(data) {
       <td><button class="btn-delete-row" onclick="deleteResponse(${r.id})" title="Excluir resposta">✕</button></td>
     </tr>
   `).join('');
+}
+
+// ——— SUGESTÕES PREVENTIVAS ———
+function renderSuggestions(data) {
+  const n = data.length;
+  if (n === 0) { document.getElementById('suggestions-list').innerHTML = '<p style="color:var(--muted);font-size:14px;">Sem dados para gerar sugestões.</p>'; return; }
+
+  const suggestions = [];
+
+  // Análise de padrões para gerar sugestões contextuais
+  const semFeedback = data.filter(r => r.feedback && r.feedback.includes('Não')).length;
+  const feedbackParcial = data.filter(r => r.feedback && r.feedback.includes('Parcial')).length;
+  if (semFeedback + feedbackParcial > 0) suggestions.push({
+    icon: '🗣️', cat: 'Feedback',
+    title: 'Implementar cultura de feedback contínuo',
+    desc: `${semFeedback + feedbackParcial} de ${n} casos tiveram feedback ausente ou insuficiente. Sugestão: criar cadência obrigatória de 1:1s quinzenais com template de registro. Incluir perguntas-chave: "O que está funcionando?", "O que te preocupa?", "Precisa de algum apoio?". Feedbacks formais a cada 90 dias no mínimo.`
+  });
+
+  const semPIP = data.filter(r => r.pip && (r.pip.includes('Não') || r.pip.includes('informal'))).length;
+  if (semPIP > 0) suggestions.push({
+    icon: '📋', cat: 'Performance',
+    title: 'Criar protocolo de PIP antes de qualquer desligamento',
+    desc: `${semPIP} caso(s) não tiveram plano de melhoria adequado. Sugestão: antes de desligar por performance, aplicar PIP formal de 30-60-90 dias com metas SMART, check-ins semanais e documentação. Definir critérios objetivos de sucesso e falha. Isso protege a empresa e dá chance real ao colaborador.`
+  });
+
+  const sinaisIgnorados = data.filter(r => r.sinaisDiscussao && (r.sinaisDiscussao.includes('Não') || r.sinaisDiscussao.includes('atraso'))).length;
+  if (sinaisIgnorados > 0) suggestions.push({
+    icon: '⚡', cat: 'Detecção precoce',
+    title: 'Não ignorar sinais — agir na primeira evidência',
+    desc: `Em ${sinaisIgnorados} caso(s), sinais existiam mas não foram abordados a tempo. Sugestão: criar "health check" mensal do time onde gestores registram bandeiras amarelas. Qualquer sinal recorrente por 2 semanas deve virar conversa 1:1 imediata. Quanto antes o sinal é endereçado, maior a chance de reversão.`
+  });
+
+  const onbRuim = data.filter(r => r.onboarding && (r.onboarding.includes('sem estrutura') || r.onboarding.includes('Parcial'))).length;
+  if (onbRuim > 0) suggestions.push({
+    icon: '🎯', cat: 'Onboarding',
+    title: 'Redesenhar o processo de integração de novos membros',
+    desc: `${onbRuim} pessoa(s) tiveram onboarding inadequado. Sugestão: criar trilha com marcos obrigatórios nos dias 7, 30, 60 e 90. Incluir: documentação do projeto, apresentação do time, reunião de expectativas com gestor, buddy designado por 60 dias, e avaliação mútua ao final de cada marco.`
+  });
+
+  const buddyRuim = data.filter(r => r.buddy && (r.buddy.includes('conta') || r.buddy.includes('limitado'))).length;
+  if (buddyRuim > 0) suggestions.push({
+    icon: '🤝', cat: 'Buddy',
+    title: 'Ativar programa de buddy/mentor para cada contratação',
+    desc: `${buddyRuim} profissional(is) ficaram sem apoio adequado na adaptação. Sugestão: cada novo membro deve ter um buddy voluntário (não o gestor direto) por pelo menos 60 dias. O buddy deve ter checklist de acompanhamento e slot de 30min semanal dedicado. Medir NPS do novo membro ao fim do período.`
+  });
+
+  const liderancaBaixa = data.filter(r => (r.lideranca || 3) <= 2).length;
+  if (liderancaBaixa > 0) suggestions.push({
+    icon: '👥', cat: 'Liderança',
+    title: 'Investir em desenvolvimento de lideranças',
+    desc: `${liderancaBaixa} caso(s) tiveram liderança avaliada com nota ≤ 2. Sugestão: criar programa de capacitação obrigatório para gestores com foco em: comunicação não-violenta, técnicas de feedback, gestão de conflitos, e inclusão. Considerar 360° anônimo semestral. Lideranças com avaliação ruim devem ter plano de desenvolvimento.`
+  });
+
+  const ambienteRuim = data.filter(r => r.ambiente && r.ambiente.includes('Dificultava')).length;
+  if (ambienteRuim > 0) suggestions.push({
+    icon: '🏠', cat: 'Ambiente',
+    title: 'Tratar ambientes tóxicos como prioridade zero',
+    desc: `${ambienteRuim} pessoa(s) relataram ambiente que dificultava o desempenho. Sugestão: realizar pesquisa de clima trimestral anônima no time. Se 2+ pessoas reportarem problemas, agendar retrospectiva com facilitador externo. Times com ambiente ruim têm 3x mais turnover — resolver isso economiza dinheiro.`
+  });
+
+  const perfilErrado = data.filter(r => r.perfil && (r.perfil.includes('erro') || r.perfil.includes('Parcial'))).length;
+  if (perfilErrado > 0) suggestions.push({
+    icon: '🔍', cat: 'Seleção',
+    title: 'Melhorar critérios e processo de contratação',
+    desc: `${perfilErrado} caso(s) indicam desalinhamento entre perfil contratado e a função. Sugestão: criar scorecard de contratação com competências técnicas E comportamentais obrigatórias. Incluir entrevista cultural com roteiro STAR, case prático e referência profissional. Ter ao menos 2 entrevistadores para reduzir viés.`
+  });
+
+  const selecaoRuim = data.filter(r => r.selecaoCultural && (r.selecaoCultural.includes('técnico') || r.selecaoCultural.includes('intuição'))).length;
+  if (selecaoRuim > 0 && perfilErrado === 0) suggestions.push({
+    icon: '🧭', cat: 'Fit cultural',
+    title: 'Avaliar fit cultural com estrutura, não intuição',
+    desc: `${selecaoRuim} contratação(ões) não avaliaram adequadamente aspectos culturais. Sugestão: documentar os valores da empresa em comportamentos observáveis. Criar guia de entrevista cultural com exemplos de respostas boas e ruins. A decisão de contratação deve incluir pelo menos 1 par do time futuro.`
+  });
+
+  // Sugestão geral sempre presente
+  suggestions.push({
+    icon: '📊', cat: 'Melhoria contínua',
+    title: 'Realizar retro trimestral de desligamentos com este dashboard',
+    desc: `Use esta ferramenta a cada trimestre para identificar padrões recorrentes. Se os mesmos motivos aparecem em ciclos consecutivos, o problema é sistêmico e exige intervenção estrutural. Compartilhe o dashboard com RH e diretoria para decisões baseadas em dados.`
+  });
+
+  document.getElementById('suggestions-list').innerHTML = suggestions.map(s => `
+    <div class="suggestion-card">
+      <div class="suggestion-icon">${s.icon}</div>
+      <div class="suggestion-body">
+        <div class="suggestion-title">${escapeHtml(s.title)}</div>
+        <div class="suggestion-desc">${escapeHtml(s.desc)}</div>
+        <span class="suggestion-tag">${escapeHtml(s.cat)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ——— ADMIN: EXCLUSÃO POR PESSOA ———
+function renderAdminPeople() {
+  const grouped = {};
+  responses.forEach(r => {
+    const key = r.gestor || 'Anônimo';
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(r);
+  });
+
+  const people = Object.keys(grouped).sort();
+  if (people.length === 0) {
+    document.getElementById('admin-people-list').innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhuma avaliação cadastrada.</p>';
+    return;
+  }
+
+  document.getElementById('admin-people-list').innerHTML = people.map(name => {
+    const items = grouped[name];
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const risks = items.map(r => r.risk);
+    const hasAlto = risks.includes('alto');
+    const riskLabel = hasAlto ? '<span class="risk-pill risk-alto">Alto</span>' : risks.includes('medio') ? '<span class="risk-pill risk-medio">Médio</span>' : '<span class="risk-pill risk-baixo">Baixo</span>';
+    const ids = items.map(r => r.id).join(',');
+    return `
+    <div class="admin-person-card">
+      <div class="admin-person-info">
+        <div class="admin-person-avatar">${initials}</div>
+        <div>
+          <div class="admin-person-name">${escapeHtml(name)}</div>
+          <div class="admin-person-meta">${items.length} avaliação(ões) · ${items.map(r => escapeHtml(r.time)).join(', ')} · ${riskLabel}</div>
+        </div>
+      </div>
+      <div class="admin-person-actions">
+        <button class="btn-admin-delete" onclick="deletePersonResponses('${escapeHtml(name)}', [${ids}])">
+          🗑 Limpar avaliações
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deletePersonResponses(name, ids) {
+  const count = ids.length;
+  showConfirm(
+    'Limpar avaliações de ' + name + '?',
+    count + ' avaliação(ões) serão excluídas permanentemente.',
+    () => {
+      const idSet = new Set(ids);
+      responses = responses.filter(r => !idSet.has(r.id));
+      save();
+      updateBadge();
+      updateHomeStats();
+      renderDashboard();
+      showToast('🗑 Avaliações de ' + name + ' removidas', 'danger');
+    }
+  );
 }
 
 function escapeHtml(str) {

@@ -9,5 +9,21 @@
   "scripts": {
     "dev": "npx serve .",
     "start": "npx serve ."
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eloviskis/analise-desligamentos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/eloviskis/analise-desligamentos/issues"
+  },
+  "homepage": "https://github.com/eloviskis/analise-desligamentos#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
   }
 }
