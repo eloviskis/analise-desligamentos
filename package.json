@@ -1,5 +1,8 @@
 {
   "name": "analise-desligamentos",
+  "vercel": {
+    "projectName": "analise-desligamentos"
+  },
   "version": "1.0.0",
   "description": "Dashboard para análise sistêmica de desligamentos organizacionais",
   "private": true,
