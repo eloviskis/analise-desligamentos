@@ -27,6 +27,7 @@ async function loginAsAdmin(page) {
 const MOCK_CASES = [
   {
     gestor: 'Maria Fernanda',
+    funcionario: 'Lucas Oliveira',
     time: 'Time Condado',
     periodo: 'Janeiro 2026',
     motivo: 0,        // Performance técnica
@@ -60,6 +61,7 @@ const MOCK_CASES = [
   },
   {
     gestor: 'Carlos Eduardo',
+    funcionario: 'Rafaela Santos',
     time: 'Engenharia Backend',
     periodo: 'Fevereiro 2026',
     motivo: 1,        // Performance comportamental
@@ -93,6 +95,7 @@ const MOCK_CASES = [
   },
   {
     gestor: 'Ana Beatriz',
+    funcionario: 'Lucas Oliveira',
     time: 'Produto',
     periodo: 'Março 2026',
     motivo: 2,        // Desalinhamento cultural
@@ -169,10 +172,18 @@ test.describe('Formulário — Validação', () => {
 
   test('não deve avançar da seção 2 sem selecionar opções', async ({ page }) => {
     await page.goto('/');
+    // Seed desligados
+    await page.evaluate(() => {
+      localStorage.setItem('deslig-desligados', JSON.stringify([
+        { nome: 'Lucas Oliveira', cargo: 'Dev', tempo: '2 anos' }
+      ]));
+    });
+    await page.reload();
     await page.click('button:has-text("Responder formulário")');
     
     // Preencher seção 1
     await page.fill('#f-gestor', 'Teste');
+    await page.selectOption('#f-funcionario', 'Lucas Oliveira');
     await page.fill('#f-time', 'Teste');
     await page.fill('#f-periodo', 'Jan 2026');
     await page.click('#sec-1 button:has-text("Próximo →")');
@@ -198,11 +209,26 @@ test.describe('Formulário — Preenchimento e Submissão', () => {
         await page.evaluate(() => localStorage.removeItem('deslig-responses'));
         await page.reload();
       }
+
+      // Seed desligados for the combo
+      await page.evaluate(() => {
+        if (!localStorage.getItem('deslig-desligados')) {
+          const defaultDesligados = [
+            { nome: 'Lucas Oliveira', cargo: 'Desenvolvedor', tempo: '2 anos' },
+            { nome: 'Rafaela Santos', cargo: 'Engenheira Backend', tempo: '1 ano e 6 meses' },
+            { nome: 'Pedro Almeida', cargo: 'Analista Comercial', tempo: '1 ano' },
+            { nome: 'Camila Ferreira', cargo: 'UX Designer', tempo: '3 anos' }
+          ];
+          localStorage.setItem('deslig-desligados', JSON.stringify(defaultDesligados));
+        }
+      });
+      await page.reload();
       
       await page.click('button:has-text("Responder formulário")');
 
       // ——— SEÇÃO 1: Identificação ———
       await page.fill('#f-gestor', mockCase.gestor);
+      await page.selectOption('#f-funcionario', mockCase.funcionario);
       await page.fill('#f-time', mockCase.time);
       await page.fill('#f-periodo', mockCase.periodo);
       await page.click('#sec-1 button:has-text("Próximo →")');
@@ -354,6 +380,7 @@ test.describe('Formulário — Preenchimento e Submissão', () => {
       expect(stored.length).toBeGreaterThanOrEqual(1);
       const lastEntry = stored[stored.length - 1];
       expect(lastEntry.gestor).toBe(mockCase.gestor);
+      expect(lastEntry.funcionario).toBe(mockCase.funcionario);
       expect(lastEntry.time).toBe(mockCase.time);
       expect(lastEntry.risk).toBe(mockCase.expectedRisk.toLowerCase());
       console.log(`  ✅ Caso ${caseIdx + 1} — localStorage: gestor="${lastEntry.gestor}", risco="${lastEntry.risk}", score=${lastEntry.score}`);
@@ -372,9 +399,9 @@ test.describe('Dashboard — Visualização com dados mockados', () => {
     await loginAsAdmin(page);
     // Injetar 3 casos mockados no localStorage
     const mockData = [
-      { id: 1001, gestor: 'Maria Fernanda', time: 'Time Condado', periodo: 'Jan 2026', motivo: 'Performance técnica abaixo do esperado', feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria', expectativas: 'Parcialmente claras', onboarding: 'Não — o profissional foi inserido sem estrutura', buddy: 'Não — foi deixado por conta própria', ambiente: 'Dificultava — ambiente com tensões ou problemas', lideranca: 2, perfil: 'Não — houve erro no processo seletivo', selecaoCultural: 'Não — foco apenas técnico', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Baixa produtividade ou entregas atrasadas', 'Problemas de comunicação', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Não foram discutidos', melhorias: ['Processo de contratação / critérios de seleção', 'Onboarding e integração', 'Comunicação e feedback contínuo', 'Liderança e gestão do time'], obs: '', score: 22, risk: 'alto', ts: '17/03/2026' },
-      { id: 1002, gestor: 'Carlos Eduardo', time: 'Engenharia Backend', periodo: 'Fev 2026', motivo: 'Performance comportamental / atitude', feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado', expectativas: 'Totalmente claras e documentadas', onboarding: 'Sim, bem estruturado com marcos e acompanhamento', buddy: 'Sim, teve buddy/mentor e acompanhamento', ambiente: 'Ajudava — ambiente saudável e colaborativo', lideranca: 4, perfil: 'Parcialmente alinhado', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, mas sutis e difíceis de perceber', sinaisTipos: ['Dificuldade de colaboração com o time', 'Conflitos interpessoais'], sinaisDiscussao: 'Sim, abordados prontamente', melhorias: ['Cultura organizacional'], obs: '', score: 2, risk: 'baixo', ts: '17/03/2026' },
-      { id: 1003, gestor: 'Ana Beatriz', time: 'Produto', periodo: 'Mar 2026', motivo: 'Desalinhamento cultural', feedback: 'Parcialmente — só conversas informais', pip: 'Tentativa informal, sem estrutura', expectativas: 'Parcialmente claras', onboarding: 'Parcialmente — processo informal ou incompleto', buddy: 'Parcialmente — apoio limitado', ambiente: 'Neutro — sem impacto positivo ou negativo', lideranca: 3, perfil: 'Sim, perfil correto para a função', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Problemas de comunicação', 'Qualidade técnica abaixo do esperado', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Parcialmente — com atraso ou de forma incompleta', melhorias: ['Clareza de expectativas do cargo', 'Comunicação e feedback contínuo', 'Acompanhamento de performance', 'Cultura organizacional'], obs: '', score: 7, risk: 'medio', ts: '17/03/2026' }
+      { id: 1001, gestor: 'Maria Fernanda', funcionario: 'Lucas Oliveira', time: 'Time Condado', periodo: 'Jan 2026', motivo: 'Performance técnica abaixo do esperado', feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria', expectativas: 'Parcialmente claras', onboarding: 'Não — o profissional foi inserido sem estrutura', buddy: 'Não — foi deixado por conta própria', ambiente: 'Dificultava — ambiente com tensões ou problemas', lideranca: 2, perfil: 'Não — houve erro no processo seletivo', selecaoCultural: 'Não — foco apenas técnico', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Baixa produtividade ou entregas atrasadas', 'Problemas de comunicação', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Não foram discutidos', melhorias: ['Processo de contratação / critérios de seleção', 'Onboarding e integração', 'Comunicação e feedback contínuo', 'Liderança e gestão do time'], obs: '', score: 22, risk: 'alto', ts: '17/03/2026' },
+      { id: 1002, gestor: 'Carlos Eduardo', funcionario: 'Rafaela Santos', time: 'Engenharia Backend', periodo: 'Fev 2026', motivo: 'Performance comportamental / atitude', feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado', expectativas: 'Totalmente claras e documentadas', onboarding: 'Sim, bem estruturado com marcos e acompanhamento', buddy: 'Sim, teve buddy/mentor e acompanhamento', ambiente: 'Ajudava — ambiente saudável e colaborativo', lideranca: 4, perfil: 'Parcialmente alinhado', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, mas sutis e difíceis de perceber', sinaisTipos: ['Dificuldade de colaboração com o time', 'Conflitos interpessoais'], sinaisDiscussao: 'Sim, abordados prontamente', melhorias: ['Cultura organizacional'], obs: '', score: 2, risk: 'baixo', ts: '17/03/2026' },
+      { id: 1003, gestor: 'Ana Beatriz', funcionario: 'Lucas Oliveira', time: 'Produto', periodo: 'Mar 2026', motivo: 'Desalinhamento cultural', feedback: 'Parcialmente — só conversas informais', pip: 'Tentativa informal, sem estrutura', expectativas: 'Parcialmente claras', onboarding: 'Parcialmente — processo informal ou incompleto', buddy: 'Parcialmente — apoio limitado', ambiente: 'Neutro — sem impacto positivo ou negativo', lideranca: 3, perfil: 'Sim, perfil correto para a função', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Problemas de comunicação', 'Qualidade técnica abaixo do esperado', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Parcialmente — com atraso ou de forma incompleta', melhorias: ['Clareza de expectativas do cargo', 'Comunicação e feedback contínuo', 'Acompanhamento de performance', 'Cultura organizacional'], obs: '', score: 7, risk: 'medio', ts: '17/03/2026' }
     ];
     await page.evaluate((data) => {
       localStorage.setItem('deslig-responses', JSON.stringify(data));
@@ -546,10 +573,17 @@ test.describe('Navegação', () => {
 
   test('botão voltar no formulário deve navegar entre seções', async ({ page }) => {
     await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.setItem('deslig-desligados', JSON.stringify([
+        { nome: 'Lucas Oliveira', cargo: 'Dev', tempo: '2 anos' }
+      ]));
+    });
+    await page.reload();
     await page.click('button:has-text("Responder formulário")');
 
     // Preencher e avançar seção 1
     await page.fill('#f-gestor', 'Teste');
+    await page.selectOption('#f-funcionario', 'Lucas Oliveira');
     await page.fill('#f-time', 'Teste');
     await page.fill('#f-periodo', 'Jan 2026');
     await page.click('#sec-1 button:has-text("Próximo →")');
@@ -565,13 +599,19 @@ test.describe('Navegação', () => {
 test.describe('Formulário — Reset', () => {
   test('novo formulário deve limpar todos os campos', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => localStorage.removeItem('deslig-responses'));
+    await page.evaluate(() => {
+      localStorage.removeItem('deslig-responses');
+      localStorage.setItem('deslig-desligados', JSON.stringify([
+        { nome: 'Lucas Oliveira', cargo: 'Dev', tempo: '2 anos' }
+      ]));
+    });
     await page.reload();
     
     await page.click('button:has-text("Responder formulário")');
 
     // Preencher seção 1
     await page.fill('#f-gestor', 'Teste Reset');
+    await page.selectOption('#f-funcionario', 'Lucas Oliveira');
     await page.fill('#f-time', 'Time Reset');
     await page.fill('#f-periodo', 'Jan 2026');
     await page.click('#sec-1 button:has-text("Próximo →")');

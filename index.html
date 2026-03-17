@@ -759,8 +759,14 @@
       <div class="section-title">Identificação</div>
       <div class="section-subtitle">Dados básicos para contextualização do caso.</div>
       <div class="field">
-        <label class="field-label">Seu nome (gestor) <span class="req">*</span></label>
+        <label class="field-label">Seu nome (gestor que avalia) <span class="req">*</span></label>
         <input type="text" class="text-input" id="f-gestor" placeholder="Ex: Maria Fernanda">
+      </div>
+      <div class="field">
+        <label class="field-label">Profissional desligado <span class="req">*</span></label>
+        <select class="text-input" id="f-funcionario" style="cursor:pointer;">
+          <option value="">Selecione o profissional...</option>
+        </select>
       </div>
       <div class="field">
         <label class="field-label">Time / área <span class="req">*</span></label>
@@ -1221,6 +1227,17 @@
         <div class="suggestions-list" id="suggestions-list"></div>
       </div>
 
+      <!-- CRUZAMENTO POR PROFISSIONAL -->
+      <div class="chart-card" style="margin-top:0;" id="cross-analysis-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div>
+            <div class="chart-title" style="margin-bottom:4px;">🔀 Cruzamento de avaliações por profissional</div>
+            <div class="chart-sub" style="margin-bottom:0;">Comparação entre respostas de diferentes gestores sobre o mesmo profissional</div>
+          </div>
+        </div>
+        <div id="cross-analysis-content"></div>
+      </div>
+
       <!-- RESPONSES TABLE -->
       <div class="chart-card" style="margin-top:0;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -1231,7 +1248,7 @@
         </div>
         <div class="resp-table-wrap">
           <table class="resp-table" id="resp-table">
-            <thead><tr><th>#</th><th>Gestor</th><th>Time</th><th>Período</th><th>Motivo</th><th>Onboarding</th><th>Risco</th><th></th></tr></thead>
+            <thead><tr><th>#</th><th>Gestor</th><th>Profissional</th><th>Time</th><th>Período</th><th>Motivo</th><th>Onboarding</th><th>Risco</th><th></th></tr></thead>
             <tbody id="resp-tbody"></tbody>
           </table>
         </div>
@@ -1246,6 +1263,23 @@
           </div>
         </div>
         <div id="admin-people-list" class="admin-people-grid"></div>
+      </div>
+
+      <!-- GESTÃO DE PESSOAS DESLIGADAS -->
+      <div class="chart-card admin-only" style="margin-top:0;" id="desligados-mgmt-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div class="chart-title" style="margin-bottom:4px;">📋 Pessoas desligadas</div>
+            <div class="chart-sub" style="margin-bottom:0;">Cadastre os profissionais desligados para os gestores avaliarem</div>
+          </div>
+        </div>
+        <div id="desligados-list" class="admin-people-grid"></div>
+        <div class="add-user-form" id="add-desligado-form">
+          <input type="text" id="new-desligado-nome" placeholder="Nome do profissional" style="flex:2;min-width:160px;">
+          <input type="text" id="new-desligado-cargo" placeholder="Cargo / função" style="flex:1;min-width:120px;">
+          <input type="text" id="new-desligado-time" placeholder="Time / área" style="flex:1;min-width:120px;">
+          <button class="btn-add-user" onclick="addDesligado()">+ Adicionar</button>
+        </div>
       </div>
 
       <!-- GESTÃO DE USUÁRIOS -->
@@ -1439,6 +1473,82 @@ function removeUser(username) {
   });
 }
 
+// ——— GESTÃO DE PESSOAS DESLIGADAS ———
+function getDesligados() {
+  return JSON.parse(localStorage.getItem('deslig-desligados') || '[]');
+}
+function saveDesligados(list) {
+  localStorage.setItem('deslig-desligados', JSON.stringify(list));
+}
+function addDesligado() {
+  const nome = document.getElementById('new-desligado-nome').value.trim();
+  const cargo = document.getElementById('new-desligado-cargo').value.trim();
+  const time = document.getElementById('new-desligado-time').value.trim();
+  if (!nome) { showToast('⚠ Informe o nome do profissional', 'danger'); return; }
+  const list = getDesligados();
+  if (list.some(d => d.nome.toLowerCase() === nome.toLowerCase())) {
+    showToast('⚠ Profissional já cadastrado', 'danger'); return;
+  }
+  list.push({ nome, cargo: cargo || '—', time: time || '—', addedAt: new Date().toLocaleDateString('pt-BR') });
+  saveDesligados(list);
+  document.getElementById('new-desligado-nome').value = '';
+  document.getElementById('new-desligado-cargo').value = '';
+  document.getElementById('new-desligado-time').value = '';
+  renderDesligadosList();
+  populateFuncionarioCombo();
+  showToast('✓ ' + nome + ' adicionado à lista de desligados');
+}
+function removeDesligado(nome) {
+  showConfirm('Remover profissional?', 'Remover "' + nome + '" da lista de desligados? As avaliações existentes serão mantidas.', () => {
+    const list = getDesligados().filter(d => d.nome !== nome);
+    saveDesligados(list);
+    renderDesligadosList();
+    populateFuncionarioCombo();
+    showToast('🗑 ' + nome + ' removido da lista', 'danger');
+  });
+}
+function renderDesligadosList() {
+  const list = getDesligados();
+  const el = document.getElementById('desligados-list');
+  if (!el) return;
+  if (list.length === 0) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhum profissional cadastrado. Adicione acima.</p>';
+    return;
+  }
+  el.innerHTML = list.map(d => {
+    const initials = d.nome.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const avaliacoes = responses.filter(r => r.funcionario === d.nome).length;
+    return `
+    <div class="admin-person-card">
+      <div class="admin-person-info">
+        <div class="admin-person-avatar">${initials}</div>
+        <div>
+          <div class="admin-person-name">${escapeHtml(d.nome)}</div>
+          <div style="font-size:11px;color:var(--muted);">${escapeHtml(d.cargo)} · ${escapeHtml(d.time)} · ${avaliacoes} avaliação(ões)</div>
+        </div>
+      </div>
+      <button class="btn-remove-user" onclick="removeDesligado('${escapeHtml(d.nome).replace(/'/g, "\\'")}')">Remover</button>
+    </div>`;
+  }).join('');
+}
+function populateFuncionarioCombo() {
+  const select = document.getElementById('f-funcionario');
+  if (!select) return;
+  const list = getDesligados();
+  const current = select.value;
+  select.innerHTML = '<option value="">Selecione o profissional...</option>' +
+    list.map(d => `<option value="${escapeHtml(d.nome)}"${d.nome === current ? ' selected' : ''}>${escapeHtml(d.nome)} — ${escapeHtml(d.cargo)}</option>`).join('');
+}
+// Auto-fill time when employee is selected
+document.getElementById('f-funcionario')?.addEventListener('change', function() {
+  const list = getDesligados();
+  const selected = list.find(d => d.nome === this.value);
+  if (selected && selected.time !== '—') {
+    const timeInput = document.getElementById('f-time');
+    if (!timeInput.value.trim()) timeInput.value = selected.time;
+  }
+});
+
 function renderUserManagement() {
   const users = getUsers();
   const list = document.getElementById('user-mgmt-list');
@@ -1584,7 +1694,7 @@ function exportExecutiveReport() {
   report += '  DETALHAMENTO POR CASO\n';
   report += '-'.repeat(40) + '\n';
   data.forEach((r, i) => {
-    report += `\n  ${i+1}. ${r.gestor || 'Anônimo'} — ${r.time || '—'} (${r.periodo || '—'})\n`;
+    report += `\n  ${i+1}. ${r.gestor || 'Anônimo'} → ${r.funcionario || '—'} — ${r.time || '—'} (${r.periodo || '—'})\n`;
     report += `     Risco: ${(r.risk||'').toUpperCase()} (score ${r.score || 0})\n`;
     report += `     Motivo: ${r.motivo || '—'}\n`;
     report += `     Feedback: ${r.feedback || '—'}\n`;
@@ -1630,7 +1740,7 @@ function exportExecutiveReport() {
 // ——— MOCK DATA SEED ———
 const MOCK_SEED = [
   {
-    id: 1001, gestor: 'Maria Fernanda', time: 'Time Condado', periodo: 'Janeiro 2026',
+    id: 1001, gestor: 'Maria Fernanda', funcionario: 'Lucas Oliveira', time: 'Time Condado', periodo: 'Janeiro 2026',
     motivo: 'Performance técnica abaixo do esperado',
     feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria',
     expectativas: 'Parcialmente claras',
@@ -1658,7 +1768,7 @@ const MOCK_SEED = [
     ts: '15/01/2026', score: 38, risk: 'alto'
   },
   {
-    id: 1002, gestor: 'Carlos Eduardo', time: 'Engenharia Backend', periodo: 'Fevereiro 2026',
+    id: 1002, gestor: 'Carlos Eduardo', funcionario: 'Rafaela Santos', time: 'Engenharia Backend', periodo: 'Fevereiro 2026',
     motivo: 'Performance comportamental / atitude',
     feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado',
     expectativas: 'Totalmente claras e documentadas',
@@ -1686,7 +1796,7 @@ const MOCK_SEED = [
     ts: '10/02/2026', score: 1, risk: 'baixo'
   },
   {
-    id: 1003, gestor: 'Ana Beatriz', time: 'Produto', periodo: 'Março 2026',
+    id: 1003, gestor: 'Ana Beatriz', funcionario: 'Lucas Oliveira', time: 'Produto', periodo: 'Março 2026',
     motivo: 'Desalinhamento cultural',
     feedback: 'Parcialmente — só conversas informais', pip: 'Tentativa informal, sem estrutura',
     expectativas: 'Parcialmente claras',
@@ -1714,7 +1824,7 @@ const MOCK_SEED = [
     ts: '05/03/2026', score: 9, risk: 'medio'
   },
   {
-    id: 1004, gestor: 'Ricardo Mendes', time: 'Comercial', periodo: 'Março 2026',
+    id: 1004, gestor: 'Ricardo Mendes', funcionario: 'Pedro Almeida', time: 'Comercial', periodo: 'Março 2026',
     motivo: 'Reestruturação do time',
     feedback: 'Parcialmente — só conversas informais', pip: 'Não houve plano de melhoria',
     expectativas: 'Não estavam claras',
@@ -1742,7 +1852,7 @@ const MOCK_SEED = [
     ts: '12/03/2026', score: 28, risk: 'alto'
   },
   {
-    id: 1005, gestor: 'Juliana Costa', time: 'Design', periodo: 'Janeiro 2026',
+    id: 1005, gestor: 'Juliana Costa', funcionario: 'Camila Ferreira', time: 'Design', periodo: 'Janeiro 2026',
     motivo: 'Mudança estratégica da empresa',
     feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado',
     expectativas: 'Totalmente claras e documentadas',
@@ -1779,6 +1889,16 @@ if (storedData) {
 } else {
   responses = JSON.parse(JSON.stringify(MOCK_SEED));
   localStorage.setItem('deslig-responses', JSON.stringify(responses));
+}
+// Seed desligados if not present
+if (!localStorage.getItem('deslig-desligados')) {
+  const defaultDesligados = [
+    { nome: 'Lucas Oliveira', cargo: 'Desenvolvedor', tempo: '2 anos' },
+    { nome: 'Rafaela Santos', cargo: 'Engenheira Backend', tempo: '1 ano e 6 meses' },
+    { nome: 'Pedro Almeida', cargo: 'Analista Comercial', tempo: '1 ano' },
+    { nome: 'Camila Ferreira', cargo: 'UX Designer', tempo: '3 anos' }
+  ];
+  localStorage.setItem('deslig-desligados', JSON.stringify(defaultDesligados));
 }
 let currentSection = 1;
 let matrices = {};
@@ -1832,15 +1952,18 @@ function buildProgress() {
 const VALIDATIONS = {
   1: () => {
     const g = document.getElementById('f-gestor').value.trim();
+    const f = document.getElementById('f-funcionario').value.trim();
     const t = document.getElementById('f-time').value.trim();
     const p = document.getElementById('f-periodo').value.trim();
     if (!g) document.getElementById('f-gestor').classList.add('invalid');
     else document.getElementById('f-gestor').classList.remove('invalid');
+    if (!f) document.getElementById('f-funcionario').classList.add('invalid');
+    else document.getElementById('f-funcionario').classList.remove('invalid');
     if (!t) document.getElementById('f-time').classList.add('invalid');
     else document.getElementById('f-time').classList.remove('invalid');
     if (!p) document.getElementById('f-periodo').classList.add('invalid');
     else document.getElementById('f-periodo').classList.remove('invalid');
-    return g && t && p;
+    return g && f && t && p;
   },
   2: () => getRadio('q-motivo') && getRadio('q-feedback') && getRadio('q-pip'),
   3: () => !!getRadio('q-expectativas'),
@@ -1944,6 +2067,7 @@ function submitForm() {
   const d = {
     id: Date.now(),
     gestor: document.getElementById('f-gestor').value || 'Anônimo',
+    funcionario: document.getElementById('f-funcionario').value || '—',
     time: document.getElementById('f-time').value || '—',
     periodo: document.getElementById('f-periodo').value || '—',
     motivo: getRadio('q-motivo'),
@@ -2037,13 +2161,14 @@ function updateHomeStats() {
   animateCounter(document.getElementById('hs-baixo'), responses.filter(r => r.risk === 'baixo').length);
 }
 updateHomeStats();
+populateFuncionarioCombo();
 
 // ——— EXPORT CSV ———
 function exportCSV() {
   if (responses.length === 0) return;
-  const headers = ['Gestor','Time','Período','Motivo','Feedback','PIP','Expectativas','Onboarding','Buddy','Ambiente','Liderança','Perfil','Seleção Cultural','Sinais','Sinais Tipos','Sinais Discussão','Melhorias','Score','Risco','Data'];
+  const headers = ['Gestor','Profissional','Time','Período','Motivo','Feedback','PIP','Expectativas','Onboarding','Buddy','Ambiente','Liderança','Perfil','Seleção Cultural','Sinais','Sinais Tipos','Sinais Discussão','Melhorias','Score','Risco','Data'];
   const rows = responses.map(r => [
-    r.gestor, r.time, r.periodo, r.motivo, r.feedback, r.pip,
+    r.gestor, r.funcionario || '—', r.time, r.periodo, r.motivo, r.feedback, r.pip,
     r.expectativas, r.onboarding, r.buddy, r.ambiente,
     r.lideranca, r.perfil, r.selecaoCultural, r.sinais,
     (r.sinaisTipos||[]).join('; '), r.sinaisDiscussao,
@@ -2188,7 +2313,9 @@ function renderDashboard() {
   renderSuggestions(data);
   renderTable(data);
   renderAdminPeople();
+  renderDesligadosList();
   renderUserManagement();
+  renderCrossAnalysis(data);
 }
 
 function renderKPIs(data) {
@@ -2522,6 +2649,7 @@ function renderTable(data) {
     <tr>
       <td style="color:var(--muted)">${i+1}</td>
       <td>${escapeHtml(r.gestor)}</td>
+      <td><strong>${escapeHtml(r.funcionario || '—')}</strong></td>
       <td style="color:var(--muted)">${escapeHtml(r.time)}</td>
       <td style="color:var(--muted)">${escapeHtml(r.periodo)}</td>
       <td>${motivoShort(r.motivo)}</td>
@@ -2680,6 +2808,102 @@ function renderSuggestions(data) {
       </div>
     </div>
   `).join('');
+}
+
+// ——— CRUZAMENTO DE AVALIAÇÕES ———
+function renderCrossAnalysis(data) {
+  const el = document.getElementById('cross-analysis-content');
+  if (!el) return;
+
+  // Agrupar por funcionario
+  const grouped = {};
+  data.forEach(r => {
+    const key = r.funcionario || '—';
+    if (key === '—') return;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(r);
+  });
+
+  // Filtrar apenas funcionários com múltiplas avaliações ou pelo menos 1
+  const employees = Object.entries(grouped).sort((a,b) => b[1].length - a[1].length);
+
+  if (employees.length === 0) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:14px;">Nenhuma avaliação com profissional identificado.</p>';
+    document.getElementById('cross-analysis-section').style.display = 'none';
+    return;
+  }
+  document.getElementById('cross-analysis-section').style.display = '';
+
+  const riskColors = { alto: 'var(--danger)', medio: 'var(--warning)', baixo: 'var(--accent)' };
+  const riskLabels = { alto: 'Alto', medio: 'Médio', baixo: 'Baixo' };
+
+  el.innerHTML = employees.map(([name, evals]) => {
+    const multiGestor = evals.length > 1;
+    const avgScore = (evals.reduce((a,r) => a + (r.score||0), 0) / evals.length).toFixed(1);
+    const risks = evals.map(r => r.risk);
+    const worstRisk = risks.includes('alto') ? 'alto' : risks.includes('medio') ? 'medio' : 'baixo';
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+
+    // Convergências: campos onde todos concordam
+    const convergencias = [];
+    const divergencias = [];
+    if (multiGestor) {
+      const fields = [
+        { key: 'feedback', label: 'Feedback' },
+        { key: 'pip', label: 'PIP' },
+        { key: 'onboarding', label: 'Onboarding' },
+        { key: 'ambiente', label: 'Ambiente' },
+        { key: 'perfil', label: 'Perfil' },
+        { key: 'oneOnOne', label: '1:1s' },
+        { key: 'segPsicologica', label: 'Seg. psicológica' },
+        { key: 'decisao', label: 'Decisão' },
+        { key: 'retros', label: 'Retros' }
+      ];
+      fields.forEach(f => {
+        const vals = evals.map(r => r[f.key]).filter(Boolean);
+        if (vals.length < 2) return;
+        const allSame = vals.every(v => v === vals[0]);
+        if (allSame) convergencias.push(f.label);
+        else divergencias.push(f.label);
+      });
+    }
+
+    const gestoresHtml = evals.map(r => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg);border-radius:8px;font-size:13px;">
+        <span style="color:${riskColors[r.risk]};font-weight:700;">●</span>
+        <strong>${escapeHtml(r.gestor)}</strong>
+        <span style="color:var(--muted);">Score: ${r.score || 0}</span>
+        <span class="risk-pill ${r.risk === 'alto' ? 'risk-alto' : r.risk === 'medio' ? 'risk-medio' : 'risk-baixo'}" style="font-size:10px;">${riskLabels[r.risk]}</span>
+        <span style="color:var(--muted);font-size:11px;margin-left:auto;">${escapeHtml(r.motivo || '—')}</span>
+      </div>`).join('');
+
+    const convergeHtml = multiGestor && convergencias.length > 0
+      ? `<div style="margin-top:8px;font-size:12px;"><span style="color:var(--accent);">✓ Concordam em:</span> <span style="color:var(--muted);">${convergencias.join(', ')}</span></div>` : '';
+    const divergeHtml = multiGestor && divergencias.length > 0
+      ? `<div style="margin-top:4px;font-size:12px;"><span style="color:var(--warning);">⚠ Divergem em:</span> <span style="color:var(--muted);">${divergencias.join(', ')}</span></div>` : '';
+
+    return `
+    <div style="border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:12px;${multiGestor ? 'border-left:3px solid var(--accent2);' : ''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-person-avatar">${initials}</div>
+          <div>
+            <div style="font-family:var(--font-head);font-weight:700;">${escapeHtml(name)}</div>
+            <div style="font-size:12px;color:var(--muted);">${evals.length} avaliação(ões) · Score médio: ${avgScore}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${multiGestor ? '<span style="font-size:11px;background:rgba(56,210,180,0.15);color:var(--accent2);padding:2px 8px;border-radius:20px;">Multi-gestor</span>' : ''}
+          <span class="risk-pill ${worstRisk === 'alto' ? 'risk-alto' : worstRisk === 'medio' ? 'risk-medio' : 'risk-baixo'}">${riskLabels[worstRisk]}</span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${gestoresHtml}
+      </div>
+      ${convergeHtml}
+      ${divergeHtml}
+    </div>`;
+  }).join('');
 }
 
 // ——— ADMIN: EXCLUSÃO POR PESSOA ———
