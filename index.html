@@ -1323,41 +1323,55 @@
 
 <script>
 // ════════════════════════════════════════
+// API LAYER
+// ════════════════════════════════════════
+const API_BASE = 'http://187.77.55.172:3002/api';
+async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  const token = sessionStorage.getItem('deslig-token');
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  if (res.status === 401 && path !== '/auth/login') { clearSession(); showPage('login'); throw new Error('Unauthorized'); }
+  return res;
+}
+function mapResponse(r) {
+  return {
+    id: r.id, gestor: r.gestor, funcionario: r.funcionario,
+    time: r.time_area || r.time, periodo: r.periodo, motivo: r.motivo,
+    feedback: r.feedback, pip: r.pip, expectativas: r.expectativas,
+    matrizResp: r.matriz_resp ?? r.matrizResp ?? 0, matrizEntrega: r.matriz_entrega ?? r.matrizEntrega ?? 0,
+    matrizCultura: r.matriz_cultura ?? r.matrizCultura ?? 0, matrizComm: r.matriz_comm ?? r.matrizComm ?? 0,
+    sinais: r.sinais, sinaisTipos: r.sinais_tipos || r.sinaisTipos || [],
+    sinaisDiscussao: r.sinais_discussao || r.sinaisDiscussao,
+    onboarding: r.onboarding, buddy: r.buddy, onbObs: r.onb_obs || r.onbObs,
+    ambiente: r.ambiente, lideranca: r.lideranca || 3, perfil: r.perfil,
+    selecaoCultural: r.selecao_cultural || r.selecaoCultural,
+    oneOnOne: r.one_on_one || r.oneOnOne, autonomia: r.autonomia,
+    segPsicologica: r.seg_psicologica || r.segPsicologica,
+    decisao: r.decisao, apoioDecisao: r.apoio_decisao || r.apoioDecisao,
+    retros: r.retros, impedimentos: r.impedimentos,
+    participacaoRitos: r.participacao_ritos || r.participacaoRitos,
+    capacidade: r.capacidade, smAtuacao: r.sm_atuacao || r.smAtuacao,
+    melhorias: r.melhorias || [], obs: r.obs,
+    score: r.score || 0, risk: r.risk || 'baixo',
+    ts: r.created_at ? new Date(r.created_at).toLocaleDateString('pt-BR') : (r.ts || '')
+  };
+}
+
+// ════════════════════════════════════════
 // AUTH SYSTEM
 // ════════════════════════════════════════
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + '_deslig_salt_2026');
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-// Default admin user seed
-async function seedDefaultAdmin() {
-  const users = JSON.parse(localStorage.getItem('deslig-users') || '[]');
-  if (users.length === 0) {
-    const hash = await hashPassword('admin123');
-    users.push({ username: 'admin', passwordHash: hash, role: 'admin' });
-    localStorage.setItem('deslig-users', JSON.stringify(users));
-  }
-}
-seedDefaultAdmin();
-
-function getUsers() {
-  return JSON.parse(localStorage.getItem('deslig-users') || '[]');
-}
-function saveUsers(users) {
-  localStorage.setItem('deslig-users', JSON.stringify(users));
-}
 function getSession() {
   const s = sessionStorage.getItem('deslig-session');
   return s ? JSON.parse(s) : null;
 }
-function setSession(username, role) {
+function setSession(username, role, token) {
   sessionStorage.setItem('deslig-session', JSON.stringify({ username, role }));
+  sessionStorage.setItem('deslig-token', token);
 }
 function clearSession() {
   sessionStorage.removeItem('deslig-session');
+  sessionStorage.removeItem('deslig-token');
 }
 function isAdmin() {
   const s = getSession();
@@ -1375,21 +1389,26 @@ async function doLogin() {
     document.getElementById('login-error').classList.add('show');
     return;
   }
-  const hash = await hashPassword(password);
-  const users = getUsers();
-  const user = users.find(u => u.username === username && u.passwordHash === hash);
-  if (!user) {
-    document.getElementById('login-error').textContent = '⚠ Usuário ou senha incorretos';
+  try {
+    const res = await api('POST', '/auth/login', { username, password });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById('login-error').textContent = '⚠ ' + (data.error || 'Erro ao fazer login');
+      document.getElementById('login-error').classList.add('show');
+      return;
+    }
+    setSession(data.username, data.role, data.token);
+    document.getElementById('login-error').classList.remove('show');
+    document.getElementById('login-user').value = '';
+    document.getElementById('login-pass').value = '';
+    updateAuthUI();
+    await loadAllData();
+    showPage('dashboard');
+    showToast('✓ Logado como ' + data.username, 'info');
+  } catch(e) {
+    document.getElementById('login-error').textContent = '⚠ Erro de conexão com o servidor';
     document.getElementById('login-error').classList.add('show');
-    return;
   }
-  setSession(user.username, user.role);
-  document.getElementById('login-error').classList.remove('show');
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pass').value = '';
-  updateAuthUI();
-  showPage('dashboard');
-  showToast('✓ Logado como ' + user.username, 'info');
 }
 
 // Enter key to login
@@ -1446,67 +1465,72 @@ async function addUser() {
     showToast('⚠ Senha precisa ter pelo menos 4 caracteres', 'danger');
     return;
   }
-  const users = getUsers();
-  if (users.some(u => u.username === username)) {
-    showToast('⚠ Usuário já existe', 'danger');
-    return;
-  }
-  const hash = await hashPassword(password);
-  users.push({ username, passwordHash: hash, role });
-  saveUsers(users);
-  document.getElementById('new-user-name').value = '';
-  document.getElementById('new-user-pass').value = '';
-  renderUserManagement();
-  showToast('✓ Usuário ' + username + ' adicionado como ' + role, 'info');
+  try {
+    const res = await api('POST', '/users', { username, password, role });
+    const data = await res.json();
+    if (!res.ok) { showToast('⚠ ' + (data.error || 'Erro ao criar usuário'), 'danger'); return; }
+    document.getElementById('new-user-name').value = '';
+    document.getElementById('new-user-pass').value = '';
+    await renderUserManagement();
+    showToast('✓ Usuário ' + username + ' adicionado como ' + role, 'info');
+  } catch(e) { showToast('⚠ Erro de conexão', 'danger'); }
 }
 
-function removeUser(username) {
+function removeUser(id, username) {
   if (!isAdmin()) return;
   const session = getSession();
   if (username === session.username) {
     showToast('⚠ Você não pode remover seu próprio usuário', 'danger');
     return;
   }
-  showConfirm('Remover usuário ' + username + '?', 'O usuário perderá acesso ao dashboard.', () => {
-    const users = getUsers().filter(u => u.username !== username);
-    saveUsers(users);
-    renderUserManagement();
-    showToast('🗑 Usuário ' + username + ' removido', 'danger');
+  showConfirm('Remover usuário ' + username + '?', 'O usuário perderá acesso ao dashboard.', async () => {
+    try {
+      await api('DELETE', '/users/' + id);
+      await renderUserManagement();
+      showToast('🗑 Usuário ' + username + ' removido', 'danger');
+    } catch(e) { showToast('⚠ Erro ao remover', 'danger'); }
   });
 }
 
 // ——— GESTÃO DE PESSOAS DESLIGADAS ———
+let desligadosCache = [];
+async function loadDesligados() {
+  try {
+    const res = await fetch(API_BASE + '/desligados');
+    desligadosCache = await res.json();
+  } catch(e) { desligadosCache = []; }
+  return desligadosCache;
+}
 function getDesligados() {
-  return JSON.parse(localStorage.getItem('deslig-desligados') || '[]');
+  return desligadosCache;
 }
-function saveDesligados(list) {
-  localStorage.setItem('deslig-desligados', JSON.stringify(list));
-}
-function addDesligado() {
+async function addDesligado() {
   const nome = document.getElementById('new-desligado-nome').value.trim();
   const cargo = document.getElementById('new-desligado-cargo').value.trim();
   const time = document.getElementById('new-desligado-time').value.trim();
   if (!nome) { showToast('⚠ Informe o nome do profissional', 'danger'); return; }
-  const list = getDesligados();
-  if (list.some(d => d.nome.toLowerCase() === nome.toLowerCase())) {
-    showToast('⚠ Profissional já cadastrado', 'danger'); return;
-  }
-  list.push({ nome, cargo: cargo || '—', time: time || '—', addedAt: new Date().toLocaleDateString('pt-BR') });
-  saveDesligados(list);
-  document.getElementById('new-desligado-nome').value = '';
-  document.getElementById('new-desligado-cargo').value = '';
-  document.getElementById('new-desligado-time').value = '';
-  renderDesligadosList();
-  populateFuncionarioCombo();
-  showToast('✓ ' + nome + ' adicionado à lista de desligados');
-}
-function removeDesligado(nome) {
-  showConfirm('Remover profissional?', 'Remover "' + nome + '" da lista de desligados? As avaliações existentes serão mantidas.', () => {
-    const list = getDesligados().filter(d => d.nome !== nome);
-    saveDesligados(list);
+  try {
+    const res = await api('POST', '/desligados', { nome, cargo: cargo || '—', area: time || '—' });
+    const data = await res.json();
+    if (!res.ok) { showToast('⚠ ' + (data.error || 'Erro'), 'danger'); return; }
+    document.getElementById('new-desligado-nome').value = '';
+    document.getElementById('new-desligado-cargo').value = '';
+    document.getElementById('new-desligado-time').value = '';
+    await loadDesligados();
     renderDesligadosList();
     populateFuncionarioCombo();
-    showToast('🗑 ' + nome + ' removido da lista', 'danger');
+    showToast('✓ ' + nome + ' adicionado à lista de desligados');
+  } catch(e) { showToast('⚠ Erro de conexão', 'danger'); }
+}
+function removeDesligado(id, nome) {
+  showConfirm('Remover profissional?', 'Remover "' + nome + '" da lista de desligados? As avaliações existentes serão mantidas.', async () => {
+    try {
+      await api('DELETE', '/desligados/' + id);
+      await loadDesligados();
+      renderDesligadosList();
+      populateFuncionarioCombo();
+      showToast('🗑 ' + nome + ' removido da lista', 'danger');
+    } catch(e) { showToast('⚠ Erro ao remover', 'danger'); }
   });
 }
 function renderDesligadosList() {
@@ -1526,10 +1550,10 @@ function renderDesligadosList() {
         <div class="admin-person-avatar">${initials}</div>
         <div>
           <div class="admin-person-name">${escapeHtml(d.nome)}</div>
-          <div style="font-size:11px;color:var(--muted);">${escapeHtml(d.cargo)} · ${escapeHtml(d.time)} · ${avaliacoes} avaliação(ões)</div>
+          <div style="font-size:11px;color:var(--muted);">${escapeHtml(d.cargo)} · ${escapeHtml(d.area || d.time || '—')} · ${avaliacoes} avaliação(ões)</div>
         </div>
       </div>
-      <button class="btn-remove-user" onclick="removeDesligado('${escapeHtml(d.nome).replace(/'/g, "\\'")}')">Remover</button>
+      <button class="btn-remove-user" onclick="removeDesligado(${d.id}, '${escapeHtml(d.nome).replace(/'/g, "\\'")}')">Remover</button>
     </div>`;
   }).join('');
 }
@@ -1545,14 +1569,15 @@ function populateFuncionarioCombo() {
 document.getElementById('f-funcionario')?.addEventListener('change', function() {
   const list = getDesligados();
   const selected = list.find(d => d.nome === this.value);
-  if (selected && selected.time !== '—') {
+  if (selected && selected.area && selected.area !== '—') {
     const timeInput = document.getElementById('f-time');
-    if (!timeInput.value.trim()) timeInput.value = selected.time;
+    if (!timeInput.value.trim()) timeInput.value = selected.area;
   }
 });
 
-function renderUserManagement() {
-  const users = getUsers();
+async function renderUserManagement() {
+  let users = [];
+  try { const res = await api('GET', '/users'); users = await res.json(); } catch(e) {}
   const list = document.getElementById('user-mgmt-list');
   if (!list) return;
   list.innerHTML = users.map(u => {
@@ -1567,7 +1592,7 @@ function renderUserManagement() {
       </div>
       <div class="user-mgmt-actions">
         <button class="btn-change-pass" onclick="promptChangePassword('${escapeHtml(u.username)}')">🔑 Trocar senha</button>
-        ${!isSelf ? '<button class="btn-remove-user" onclick="removeUser(\'' + escapeHtml(u.username) + '\')">Remover</button>' : ''}
+        ${!isSelf ? '<button class="btn-remove-user" onclick="removeUser(' + u.id + ', \'' + escapeHtml(u.username) + '\')">Remover</button>' : ''}
       </div>
     </div>`;
   }).join('');
@@ -1602,16 +1627,17 @@ function promptChangePassword(username) {
       showToast('⚠ As senhas não conferem', 'danger');
       return;
     }
-    const hash = await hashPassword(newPass);
-    const users = getUsers();
-    const user = users.find(u => u.username === username);
-    if (user) {
-      user.passwordHash = hash;
-      saveUsers(users);
-      closeConfirm();
-      actionBtn.onclick = null;
-      showToast('✓ Senha de ' + username + ' alterada com sucesso', 'info');
-    }
+    try {
+      const res = await api('POST', '/auth/change-password', { currentPassword: newPass, newPassword: newPass });
+      if (res.ok) {
+        closeConfirm();
+        actionBtn.onclick = null;
+        showToast('✓ Senha de ' + username + ' alterada com sucesso', 'info');
+      } else {
+        const d = await res.json();
+        showToast('⚠ ' + (d.error || 'Erro ao trocar senha'), 'danger');
+      }
+    } catch(e) { showToast('⚠ Erro de conexão', 'danger'); }
   };
   overlay.classList.add('show');
 }
@@ -1884,23 +1910,18 @@ const MOCK_SEED = [
 ];
 
 // ——— STATE ———
-let storedData = localStorage.getItem('deslig-responses');
-let responses;
-if (storedData) {
-  responses = JSON.parse(storedData);
-} else {
-  responses = JSON.parse(JSON.stringify(MOCK_SEED));
-  localStorage.setItem('deslig-responses', JSON.stringify(responses));
-}
-// Seed desligados if not present
-if (!localStorage.getItem('deslig-desligados')) {
-  const defaultDesligados = [
-    { nome: 'Lucas Oliveira', cargo: 'Desenvolvedor', tempo: '2 anos' },
-    { nome: 'Rafaela Santos', cargo: 'Engenheira Backend', tempo: '1 ano e 6 meses' },
-    { nome: 'Pedro Almeida', cargo: 'Analista Comercial', tempo: '1 ano' },
-    { nome: 'Camila Ferreira', cargo: 'UX Designer', tempo: '3 anos' }
-  ];
-  localStorage.setItem('deslig-desligados', JSON.stringify(defaultDesligados));
+let responses = [];
+async function loadAllData() {
+  try {
+    if (isLoggedIn()) {
+      const rRes = await api('GET', '/responses');
+      if (rRes.ok) {
+        const raw = await rRes.json();
+        responses = raw.map(mapResponse);
+      }
+    }
+    await loadDesligados();
+  } catch(e) { console.error('loadAllData error', e); }
 }
 let currentSection = 1;
 let matrices = {};
@@ -1919,7 +1940,7 @@ function closeMobile() {
 }
 
 // ——— NAV ———
-function showPage(id) {
+async function showPage(id) {
   closeMobile();
   // Auth check for dashboard
   if (id === 'dashboard' && !isLoggedIn()) {
@@ -1930,7 +1951,8 @@ function showPage(id) {
   document.getElementById('page-'+id).classList.add('active');
   const tabs = { home: 0, form: 1, dashboard: 2, login: 2 };
   document.querySelectorAll('.nav-tab')[tabs[id]]?.classList.add('active');
-  if (id === 'dashboard') { updateAuthUI(); renderDashboard(); }
+  if (id === 'dashboard') { updateAuthUI(); await loadAllData(); renderDashboard(); }
+  if (id === 'form') { await loadDesligados(); populateFuncionarioCombo(); }
   if (id === 'home') updateHomeStats();
   window.scrollTo(0, 0);
 }
@@ -2065,7 +2087,7 @@ function riskLevel(score) {
 }
 
 // ——— SUBMIT ———
-function submitForm() {
+async function submitForm() {
   const d = {
     id: Date.now(),
     gestor: document.getElementById('f-gestor').value || 'Anônimo',
@@ -2106,15 +2128,24 @@ function submitForm() {
   };
   d.score = calcScore(d);
   d.risk = riskLevel(d.score);
-  responses.push(d);
-  save();
-  updateBadge();
-  goSection('success');
-  showToast('✓ Resposta salva com sucesso!');
+  try {
+    const res = await api('POST', '/responses', d);
+    if (res.ok) {
+      const saved = await res.json();
+      responses.push(mapResponse(saved));
+      updateBadge();
+      goSection('success');
+      showToast('✓ Resposta salva com sucesso!');
+    } else {
+      showToast('⚠ Erro ao salvar resposta', 'danger');
+    }
+  } catch(e) {
+    showToast('⚠ Erro de conexão com o servidor', 'danger');
+  }
 }
 
 function save() {
-  localStorage.setItem('deslig-responses', JSON.stringify(responses));
+  // Data is stored on the server now — no-op
 }
 
 function updateBadge() {
@@ -2163,13 +2194,22 @@ function updateHomeStats() {
   animateCounter(document.getElementById('hs-baixo'), responses.filter(r => r.risk === 'baixo').length);
 }
 updateHomeStats();
-populateFuncionarioCombo();
 
-// ——— DEEP LINK: abrir direto no formulário via ?page=form ———
-(function handleDeepLink() {
+// ——— INIT: load data from API ———
+(async function init() {
+  await loadDesligados();
+  populateFuncionarioCombo();
+  if (isLoggedIn()) {
+    await loadAllData();
+    updateBadge();
+    updateHomeStats();
+  }
+  // Deep link
   const params = new URLSearchParams(window.location.search);
   if (params.get('page') === 'form') {
     showPage('form');
+  } else if (isLoggedIn()) {
+    updateAuthUI();
   }
 })();
 
@@ -2228,30 +2268,23 @@ function importJSON(event) {
   const file = event.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
       const data = JSON.parse(e.target.result);
       if (!Array.isArray(data)) throw new Error('not array');
       const validFields = ['gestor','time','motivo','risk'];
       const valid = data.every(item => validFields.some(f => f in item));
       if (!valid) throw new Error('invalid schema');
-      // merge: add items with unique IDs
-      const existingIds = new Set(responses.map(r => r.id));
-      let added = 0;
       data.forEach(item => {
-        if (!item.id) item.id = Date.now() + Math.random();
-        if (!existingIds.has(item.id)) {
-          if (!item.score && item.score !== 0) { item.score = calcScore(item); item.risk = riskLevel(item.score); }
-          responses.push(item);
-          existingIds.add(item.id);
-          added++;
-        }
+        if (!item.score && item.score !== 0) { item.score = calcScore(item); item.risk = riskLevel(item.score); }
       });
-      save();
+      const res = await api('POST', '/responses/import', data);
+      const result = await res.json();
+      await loadAllData();
       updateBadge();
       renderDashboard();
       updateHomeStats();
-      showToast(`📤 ${added} resposta(s) importada(s)!`, 'info');
+      showToast(`📤 ${result.imported} resposta(s) importada(s)!`, 'info');
     } catch(err) {
       showToast('⚠ Arquivo JSON inválido', 'danger');
     }
@@ -2262,24 +2295,28 @@ function importJSON(event) {
 
 // ——— DELETE ———
 function deleteResponse(id) {
-  showConfirm('Excluir resposta?', 'Essa ação não pode ser desfeita.', () => {
-    responses = responses.filter(r => r.id !== id);
-    save();
-    updateBadge();
-    updateHomeStats();
-    renderDashboard();
-    showToast('🗑 Resposta excluída', 'danger');
+  showConfirm('Excluir resposta?', 'Essa ação não pode ser desfeita.', async () => {
+    try {
+      await api('DELETE', '/responses/' + id);
+      responses = responses.filter(r => r.id !== id);
+      updateBadge();
+      updateHomeStats();
+      renderDashboard();
+      showToast('🗑 Resposta excluída', 'danger');
+    } catch(e) { showToast('⚠ Erro ao excluir', 'danger'); }
   });
 }
 
 function confirmClearAll() {
-  showConfirm('Limpar todos os dados?', `${responses.length} resposta(s) serão excluídas permanentemente.`, () => {
-    responses = [];
-    save();
-    updateBadge();
-    updateHomeStats();
-    renderDashboard();
-    showToast('🗑 Todos os dados foram limpos', 'danger');
+  showConfirm('Limpar todos os dados?', `${responses.length} resposta(s) serão excluídas permanentemente.`, async () => {
+    try {
+      await api('DELETE', '/responses');
+      responses = [];
+      updateBadge();
+      updateHomeStats();
+      renderDashboard();
+      showToast('🗑 Todos os dados foram limpos', 'danger');
+    } catch(e) { showToast('⚠ Erro ao limpar', 'danger'); }
   });
 }
 
@@ -2974,14 +3011,18 @@ function deletePersonResponses(name, ids) {
   showConfirm(
     'Limpar avaliações de ' + name + '?',
     count + ' avaliação(ões) serão excluídas permanentemente.',
-    () => {
-      const idSet = new Set(ids);
-      responses = responses.filter(r => !idSet.has(r.id));
-      save();
-      updateBadge();
-      updateHomeStats();
-      renderDashboard();
-      showToast('🗑 Avaliações de ' + name + ' removidas', 'danger');
+    async () => {
+      try {
+        for (const id of ids) {
+          await api('DELETE', '/responses/' + id);
+        }
+        const idSet = new Set(ids);
+        responses = responses.filter(r => !idSet.has(r.id));
+        updateBadge();
+        updateHomeStats();
+        renderDashboard();
+        showToast('🗑 Avaliações de ' + name + ' removidas', 'danger');
+      } catch(e) { showToast('⚠ Erro ao remover', 'danger'); }
     }
   );
 }
