@@ -1265,23 +1265,6 @@
         <div id="admin-people-list" class="admin-people-grid"></div>
       </div>
 
-      <!-- GESTÃO DE PESSOAS DESLIGADAS -->
-      <div class="chart-card admin-only" style="margin-top:0;" id="desligados-mgmt-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
-          <div>
-            <div class="chart-title" style="margin-bottom:4px;">📋 Pessoas desligadas</div>
-            <div class="chart-sub" style="margin-bottom:0;">Cadastre os profissionais desligados para os gestores avaliarem</div>
-          </div>
-        </div>
-        <div id="desligados-list" class="admin-people-grid"></div>
-        <div class="add-user-form" id="add-desligado-form">
-          <input type="text" id="new-desligado-nome" placeholder="Nome do profissional" style="flex:2;min-width:160px;">
-          <input type="text" id="new-desligado-cargo" placeholder="Cargo / função" style="flex:1;min-width:120px;">
-          <input type="text" id="new-desligado-time" placeholder="Time / área" style="flex:1;min-width:120px;">
-          <button class="btn-add-user" onclick="addDesligado()">+ Adicionar</button>
-        </div>
-      </div>
-
       <!-- GESTÃO DE USUÁRIOS -->
       <div class="chart-card admin-only" style="margin-top:0;" id="user-mgmt-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
@@ -1300,6 +1283,23 @@
           </select>
           <button class="btn-add-user" onclick="addUser()">+ Adicionar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- GESTÃO DE PESSOAS DESLIGADAS (sempre visível para admins) -->
+    <div class="chart-card admin-only" id="desligados-mgmt-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div class="chart-title" style="margin-bottom:4px;">📋 Profissionais desligados</div>
+          <div class="chart-sub" style="margin-bottom:0;">Cadastre aqui as pessoas desligadas. Elas aparecerão no formulário para os gestores avaliarem.</div>
+        </div>
+      </div>
+      <div id="desligados-list" class="admin-people-grid"></div>
+      <div class="add-user-form" id="add-desligado-form">
+        <input type="text" id="new-desligado-nome" placeholder="Nome completo" style="flex:2;min-width:160px;">
+        <input type="text" id="new-desligado-cargo" placeholder="Cargo / função" style="flex:1;min-width:120px;">
+        <input type="text" id="new-desligado-time" placeholder="Área / time" style="flex:1;min-width:120px;">
+        <button class="btn-add-user" onclick="addDesligado()">+ Adicionar</button>
       </div>
     </div>
   </div>
@@ -2297,6 +2297,7 @@ function destroyCharts() {
 
 function renderDashboard() {
   const data = filteredResponses();
+  renderDesligadosList();
   if (responses.length === 0) {
     document.getElementById('dash-empty').style.display = 'block';
     document.getElementById('dash-content').style.display = 'none';
@@ -2313,7 +2314,6 @@ function renderDashboard() {
   renderSuggestions(data);
   renderTable(data);
   renderAdminPeople();
-  renderDesligadosList();
   renderUserManagement();
   renderCrossAnalysis(data);
 }
