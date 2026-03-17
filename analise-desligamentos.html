@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise de Desligamentos — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0a1628;
+    --surface: #0f1e35;
+    --surface2: #162540;
+    --border: rgba(56,210,180,0.1);
+    --border2: rgba(56,210,180,0.22);
+    --text: #e8f4f8;
+    --muted: #7aa3be;
+    --accent: #6dd84a;
+    --accent-glow: rgba(109,216,74,0.18);
+    --accent2: #38d2b4;
+    --success: #6dd84a;
+    --warning: #f0c040;
+    --danger: #e85050;
+    --info: #38d2b4;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --radius: 12px;
+    --radius-lg: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 60px;
+    background: rgba(10,22,40,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
+  .nav-logo span { color: var(--accent); }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 6px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; color: var(--muted);
+    cursor: pointer; transition: all 0.2s; border: none; background: none;
+  }
+  .nav-tab:hover { color: var(--text); background: var(--surface2); }
+  .nav-tab.active { color: var(--text); background: var(--surface2); }
+  .nav-badge {
+    background: var(--accent); color: #0a1628;
+    font-size: 11px; font-weight: 700; padding: 2px 7px;
+    border-radius: 20px; margin-left: 4px;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero {
+    padding: 5rem 2rem 3rem;
+    max-width: 760px; margin: 0 auto;
+    text-align: center;
+  }
+  .hero-eyebrow {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.25rem;
+    padding: 5px 14px; border-radius: 20px;
+    background: var(--accent-glow); border: 1px solid rgba(109,216,74,0.3);
+  }
+  .hero h1 {
+    font-family: var(--font-head); font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800; line-height: 1.15; letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+  .hero h1 em { font-style: normal; color: var(--accent2); }
+  .hero p { font-size: 16px; color: var(--muted); max-width: 520px; margin: 0 auto 2rem; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 28px; border-radius: var(--radius);
+    background: var(--accent); color: #0a1628;
+    font-family: var(--font-body); font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary:hover { background: #82e85e; transform: translateY(-1px); }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: var(--radius);
+    background: transparent; color: var(--text);
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer; border: 1px solid rgba(56,210,180,0.3); transition: all 0.2s;
+  }
+  .btn-outline:hover { background: var(--surface2); border-color: var(--accent2); }
+
+  /* STATS STRIP */
+  .stats-strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px; background: var(--border);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+  .stat-item { background: var(--bg); padding: 1.5rem 2rem; }
+  .stat-num { font-family: var(--font-head); font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
+  .stat-num.accent { color: var(--accent); }
+  .stat-num.success { color: var(--success); }
+  .stat-num.warning { color: var(--warning); }
+  .stat-num.danger { color: var(--danger); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* FORM CONTAINER */
+  .form-wrap {
+    max-width: 700px; margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  /* FORM HEADER */
+  .form-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex; align-items: flex-start; gap: 1rem;
+  }
+  .form-header-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: rgba(56,210,180,0.1); border: 1px solid rgba(56,210,180,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .form-header h2 { font-family: var(--font-head); font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .form-header p { font-size: 13px; color: var(--muted); }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom: 2.5rem; }
+  .progress-steps { display: flex; gap: 4px; margin-bottom: 8px; }
+  .progress-step {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: var(--surface2); transition: background 0.3s;
+  }
+  .progress-step.done { background: var(--accent); }
+  .progress-step.active { background: var(--accent2); opacity: 0.7; }
+  .progress-label { font-size: 12px; color: var(--muted); }
+
+  /* FORM SECTIONS */
+  .form-section { display: none; }
+  .form-section.active { display: block; }
+  .section-title {
+    font-family: var(--font-head); font-size: 20px; font-weight: 700;
+    margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .section-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 2rem; }
+
+  /* INPUTS */
+  .field { margin-bottom: 1.5rem; }
+  .field-label {
+    display: block; font-size: 14px; font-weight: 500;
+    color: var(--text); margin-bottom: 10px;
+  }
+  .field-label span { color: var(--muted); font-weight: 400; }
+  .text-input {
+    width: 100%; padding: 11px 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: var(--font-body); font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  .text-input:focus { outline: none; border-color: var(--accent2); }
+  .text-input::placeholder { color: var(--muted); }
+
+  .radio-grid { display: flex; flex-direction: column; gap: 8px; }
+  .radio-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface); cursor: pointer;
+    transition: all 0.15s; font-size: 14px; color: var(--text);
+    user-select: none;
+  }
+  .radio-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .radio-card.sel { border-color: var(--accent2); background: rgba(56,210,180,0.08); color: var(--text); }
+  .radio-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid var(--border2); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .radio-card.sel .radio-dot { border-color: var(--accent2); }
+  .radio-dot-inner {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent2); display: none;
+  }
+  .radio-card.sel .radio-dot-inner { display: block; }
+
+  .check-grid { display: flex; flex-direction: column; gap: 8px; }
+  .check-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface); cursor: pointer;
+    transition: all 0.15s; font-size: 14px; color: var(--text);
+    user-select: none;
+  }
+  .check-card:hover { border-color: var(--border2); background: var(--surface2); }
+  .check-card.sel { border-color: var(--accent); background: rgba(109,216,74,0.07); }
+  .check-box {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--border2); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; transition: all 0.15s;
+  }
+  .check-card.sel .check-box {
+    background: var(--accent); border-color: var(--accent); color: #0a1628;
+    font-size: 11px; font-weight: 700;
+  }
+
+  .scale-row { display: flex; gap: 8px; }
+  .scale-card {
+    flex: 1; padding: 12px 4px; text-align: center;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); cursor: pointer; font-size: 14px;
+    font-weight: 600; color: var(--muted); transition: all 0.15s;
+  }
+  .scale-card:hover { border-color: var(--border2); color: var(--text); }
+  .scale-card.sel { border-color: var(--accent2); background: rgba(56,210,180,0.1); color: var(--text); }
+  .scale-label-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--muted); }
+
+  .matrix-table { width: 100%; border-collapse: collapse; }
+  .matrix-table th {
+    text-align: center; padding: 8px; font-size: 12px;
+    font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--border);
+  }
+  .matrix-table th:first-child { text-align: left; }
+  .matrix-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .matrix-table td:not(:first-child) { text-align: center; }
+  .m-dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid var(--border2); cursor: pointer;
+    margin: 0 auto; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .m-dot:hover { border-color: var(--border2); background: var(--surface2); }
+  .m-dot.sel { background: var(--accent2); border-color: var(--accent2); }
+
+  textarea.text-input { min-height: 90px; resize: vertical; }
+
+  /* NAV BUTTONS */
+  .form-nav {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 2.5rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .btn-form-next {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 24px; border-radius: var(--radius);
+    background: var(--accent); color: #0a1628;
+    font-family: var(--font-body); font-size: 14px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s;
+  }
+  .btn-form-next:hover { background: #82e85e; }
+  .btn-form-back {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 20px; border-radius: var(--radius);
+    background: transparent; color: var(--muted);
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--border); transition: all 0.2s;
+  }
+  .btn-form-back:hover { color: var(--text); border-color: var(--border2); }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  /* SUCCESS STATE */
+  .success-screen {
+    text-align: center; padding: 4rem 2rem;
+  }
+  .success-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: rgba(109,216,74,0.1); border: 1px solid rgba(109,216,74,0.35);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; margin: 0 auto 1.5rem;
+  }
+  .success-screen h2 { font-family: var(--font-head); font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .success-screen p { color: var(--muted); margin-bottom: 2rem; }
+
+  /* DASHBOARD */
+  .dash-wrap {
+    max-width: 1100px; margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  .dash-header { margin-bottom: 2rem; }
+  .dash-header h2 { font-family: var(--font-head); font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .dash-header p { font-size: 14px; color: var(--muted); }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+  .kpi-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+  }
+  .kpi-label { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+  .kpi-value { font-family: var(--font-head); font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .kpi-bar { height: 3px; border-radius: 2px; background: var(--surface2); margin-top: 10px; }
+  .kpi-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 2rem; }
+  @media (max-width: 700px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.5rem;
+  }
+  .chart-card.wide { grid-column: 1 / -1; }
+  .chart-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .chart-sub { font-size: 12px; color: var(--muted); margin-bottom: 1.25rem; }
+  .chart-canvas-wrap { position: relative; }
+
+  /* ACTIONS SECTION */
+  .actions-section { margin-bottom: 2rem; }
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .section-head h3 { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+  .section-head span { font-size: 12px; color: var(--muted); }
+  .action-list { display: flex; flex-direction: column; gap: 10px; }
+  .action-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+    transition: border-color 0.15s;
+  }
+  .action-item:hover { border-color: var(--border2); }
+  .action-priority-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 6px;
+  }
+  .p-imediata .action-priority-dot { background: var(--danger); }
+  .p-curto .action-priority-dot { background: var(--warning); }
+  .p-medio .action-priority-dot { background: var(--info); }
+  .action-body { flex: 1; }
+  .action-badges { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; font-weight: 600; padding: 3px 9px;
+    border-radius: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .badge-danger { background: rgba(232,80,80,0.12); color: var(--danger); }
+  .badge-warning { background: rgba(240,192,64,0.12); color: var(--warning); }
+  .badge-info { background: rgba(56,210,180,0.12); color: var(--accent2); }
+  .badge-area { background: var(--surface2); color: var(--muted); font-size: 11px; padding: 3px 9px; border-radius: 20px; }
+  .action-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+  .action-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .action-count { font-size: 12px; color: var(--accent2); margin-top: 6px; font-weight: 500; }
+
+  /* RESPONSES TABLE */
+  .resp-table-wrap { overflow-x: auto; }
+  .resp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .resp-table th { text-align: left; padding: 10px 12px; font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); font-weight: 500; }
+  .resp-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+  .resp-table tr:hover td { background: var(--surface2); }
+  .risk-pill {
+    display: inline-flex; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+  }
+  .risk-alto { background: rgba(232,80,80,0.12); color: var(--danger); }
+  .risk-medio { background: rgba(240,192,64,0.12); color: var(--warning); }
+  .risk-baixo { background: rgba(109,216,74,0.12); color: var(--success); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+  .empty-state h3 { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--surface); border: 1px solid var(--success);
+    border-radius: var(--radius); padding: 14px 20px;
+    font-size: 14px; color: var(--text); z-index: 999;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s ease; pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* FILTER ROW */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); transition: all 0.15s; font-family: var(--font-body);
+  }
+  .filter-btn:hover { color: var(--text); border-color: var(--border2); }
+  .filter-btn.active { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+
+  /* SCROLL to top */
+  .scroll-hint { font-size: 12px; color: var(--muted); padding: 0 1.5rem; }
+
+  @media (max-width: 640px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    nav { padding: 0 1rem; }
+    .nav-tabs { gap: 2px; }
+    .nav-tab { padding: 5px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Análise de <span>Desligamentos</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home')">Início</button>
+    <button class="nav-tab" onclick="showPage('form')">Formulário</button>
+    <button class="nav-tab" id="dash-tab" onclick="showPage('dashboard')">
+      Dashboard <span class="nav-badge" id="resp-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <!-- Wave background -->
+  <div style="position:absolute;top:0;left:0;width:100%;height:520px;overflow:hidden;pointer-events:none;z-index:0;">
+    <svg viewBox="0 0 1440 520" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;">
+      <defs>
+        <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6dd84a" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#38d2b4" stop-opacity="0.4"/>
+        </linearGradient>
+        <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#38d2b4" stop-opacity="0.5"/>
+          <stop offset="100%" stop-color="#1a8fa8" stop-opacity="0.3"/>
+        </linearGradient>
+      </defs>
+      <!-- Wave group 1 - teal lines right side -->
+      <g opacity="0.5">
+        <path d="M900,60 C980,40 1060,120 1140,80 C1220,40 1300,160 1440,100" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.6"/>
+        <path d="M900,75 C980,55 1060,135 1140,95 C1220,55 1300,175 1440,115" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.55"/>
+        <path d="M900,90 C980,70 1060,150 1140,110 C1220,70 1300,190 1440,130" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M900,105 C980,85 1060,165 1140,125 C1220,85 1300,205 1440,145" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.45"/>
+        <path d="M900,120 C980,100 1060,180 1140,140 C1220,100 1300,220 1440,160" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M900,135 C980,115 1060,195 1140,155 C1220,115 1300,235 1440,175" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.45"/>
+        <path d="M900,150 C980,130 1060,210 1140,170 C1220,130 1300,250 1440,190" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.4"/>
+        <path d="M920,30 C1000,10 1080,90 1160,50 C1240,10 1340,130 1440,70" stroke="#1a8fa8" stroke-width="1" fill="none" opacity="0.4"/>
+        <path d="M920,45 C1000,25 1080,105 1160,65 C1240,25 1340,145 1440,85" stroke="#1a8fa8" stroke-width="1" fill="none" opacity="0.35"/>
+        <path d="M920,165 C1000,145 1080,225 1160,185 C1240,145 1340,265 1440,205" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.35"/>
+        <path d="M920,180 C1000,160 1080,240 1160,200 C1240,160 1340,280 1440,220" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.3"/>
+        <path d="M920,195 C1000,175 1080,255 1160,215 C1240,175 1340,295 1440,235" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.3"/>
+        <path d="M920,210 C1000,190 1080,270 1160,230 C1240,190 1340,310 1440,250" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.25"/>
+      </g>
+      <!-- Wave group 2 - green lines bottom left -->
+      <g opacity="0.5">
+        <path d="M0,380 C120,340 240,420 360,380 C480,340 560,440 700,400 C820,360 900,440 1000,420" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.5"/>
+        <path d="M0,395 C120,355 240,435 360,395 C480,355 560,455 700,415 C820,375 900,455 1000,435" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.45"/>
+        <path d="M0,410 C120,370 240,450 360,410 C480,370 560,470 700,430 C820,390 900,470 1000,450" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.4"/>
+        <path d="M0,425 C120,385 240,465 360,425 C480,385 560,485 700,445 C820,405 900,485 1000,465" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.35"/>
+        <path d="M0,440 C120,400 240,480 360,440 C480,400 560,500 700,460 C820,420 900,500 1000,480" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.35"/>
+        <path d="M0,455 C120,415 240,495 360,455 C480,415 560,515 700,475 C820,435 900,515 1000,495" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.3"/>
+        <path d="M0,470 C120,430 240,510 360,470 C480,430 560,530 700,490 C820,450 900,530 1000,510" stroke="#1a8fa8" stroke-width="1" fill="none" opacity="0.3"/>
+        <path d="M0,365 C120,325 240,405 360,365 C480,325 560,425 700,385 C820,345 900,425 1000,405" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.35"/>
+        <path d="M0,350 C120,310 240,390 360,350 C480,310 560,410 700,370 C820,330 900,410 1000,390" stroke="#38d2b4" stroke-width="1" fill="none" opacity="0.28"/>
+        <path d="M0,485 C120,445 240,525 360,485 C480,445 560,500 700,505 C820,465 900,505 1000,490" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.22"/>
+        <path d="M0,500 C120,460 240,520 360,495 C480,455 560,510 700,515 C820,475 900,515 1000,500" stroke="#6dd84a" stroke-width="1" fill="none" opacity="0.18"/>
+      </g>
+    </svg>
+  </div>
+  <div style="position:relative;z-index:1;">
+  <div class="hero">
+    <div class="hero-eyebrow">🔍 Aprendizado Organizacional</div>
+    <h1>Por que chegamos<br><em>até aqui?</em></h1>
+    <p>Ferramenta para gestores analisarem desligamentos com foco sistêmico — não em julgamento, mas em melhoria contínua real.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-primary" onclick="showPage('form')">
+        Responder formulário →
+      </button>
+      <button class="btn-outline" onclick="showPage('dashboard')">
+        Ver dashboard
+      </button>
+    </div>
+  </div>
+  <div class="stats-strip" id="home-stats">
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--accent2)" id="hs-total">0</div>
+      <div class="stat-label">Respostas coletadas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num danger" id="hs-alto">0</div>
+      <div class="stat-label">Risco sistêmico alto</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num warning" id="hs-medio">0</div>
+      <div class="stat-label">Risco sistêmico médio</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--accent)" id="hs-baixo">0</div>
+      <div class="stat-label">Risco sistêmico baixo</div>
+    </div>
+  </div>
+  <div style="max-width:760px;margin:0 auto;padding:0 2rem 4rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
+      <div style="background:var(--surface);border:1px solid rgba(56,210,180,0.15);border-radius:var(--radius-lg);padding:1.5rem;">
+        <div style="font-size:24px;margin-bottom:12px;">📋</div>
+        <div style="font-family:var(--font-head);font-weight:700;margin-bottom:6px;">Formulário estruturado</div>
+        <div style="font-size:13px;color:var(--muted);">7 seções cobrindo contexto, expectativas, onboarding, dinâmica de time e processo seletivo.</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(56,210,180,0.15);border-radius:var(--radius-lg);padding:1.5rem;">
+        <div style="font-size:24px;margin-bottom:12px;">👥</div>
+        <div style="font-family:var(--font-head);font-weight:700;margin-bottom:6px;">Multi-gestor</div>
+        <div style="font-size:13px;color:var(--muted);">Vários gestores respondem sobre diferentes casos. Todos os dados consolidados no mesmo dashboard.</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(56,210,180,0.15);border-radius:var(--radius-lg);padding:1.5rem;">
+        <div style="font-size:24px;margin-bottom:12px;">📊</div>
+        <div style="font-family:var(--font-head);font-weight:700;margin-bottom:6px;">Dashboard analítico</div>
+        <div style="font-size:13px;color:var(--muted);">Padrões por motivo, onboarding, liderança e sinais. Plano de ações gerado automaticamente.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM PAGE -->
+<div class="page" id="page-form">
+  <div class="form-wrap">
+    <div style="padding-top:2rem;"></div>
+    <div class="form-header">
+      <div class="form-header-icon">📝</div>
+      <div>
+        <h2>Formulário de análise de desligamento</h2>
+        <p>Preencha com base em um caso específico. Foco em melhoria do sistema, não julgamento pessoal.</p>
+      </div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-steps" id="progress-steps"></div>
+      <div class="progress-label" id="progress-label">Passo 1 de 7</div>
+    </div>
+
+    <!-- SECTION 1: IDENTIFICAÇÃO -->
+    <div class="form-section active" id="sec-1">
+      <div class="section-title">Identificação</div>
+      <div class="section-subtitle">Dados básicos para contextualização do caso.</div>
+      <div class="field">
+        <label class="field-label">Seu nome (gestor)</label>
+        <input type="text" class="text-input" id="f-gestor" placeholder="Ex: Maria Fernanda">
+      </div>
+      <div class="field">
+        <label class="field-label">Time / área</label>
+        <input type="text" class="text-input" id="f-time" placeholder="Ex: Time Condado, Engenharia">
+      </div>
+      <div class="field">
+        <label class="field-label">Mês / período do desligamento</label>
+        <input type="text" class="text-input" id="f-periodo" placeholder="Ex: Janeiro 2025">
+      </div>
+      <div class="form-nav">
+        <span></span>
+        <button class="btn-form-next" onclick="goSection(2)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 2: CONTEXTO -->
+    <div class="form-section" id="sec-2">
+      <div class="section-title">Contexto do desligamento</div>
+      <div class="section-subtitle">Qual foi a principal razão e como o processo foi conduzido.</div>
+      <div class="field">
+        <label class="field-label">O desligamento foi motivado principalmente por:</label>
+        <div class="radio-grid" id="q-motivo">
+          <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Performance técnica abaixo do esperado</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Performance comportamental / atitude</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Desalinhamento cultural</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Mudança estratégica da empresa</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Reestruturação do time</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Outro motivo</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O profissional recebeu feedbacks formais antes do desligamento?</label>
+        <div class="radio-grid" id="q-feedback">
+          <div class="radio-card" onclick="pickRadio(this,'q-feedback')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, com registros formais e documentados</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-feedback')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — só conversas informais</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-feedback')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não houve feedbacks formais</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Existiu plano de melhoria (PIP) antes da decisão final?</label>
+        <div class="radio-grid" id="q-pip">
+          <div class="radio-card" onclick="pickRadio(this,'q-pip')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, com acompanhamento estruturado</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-pip')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Tentativa informal, sem estrutura</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-pip')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não houve plano de melhoria</div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(1)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(3)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 3: EXPECTATIVAS -->
+    <div class="form-section" id="sec-3">
+      <div class="section-title">Clareza de expectativas</div>
+      <div class="section-subtitle">O profissional sabia o que era esperado dele?</div>
+      <div class="field">
+        <label class="field-label">As expectativas da função estavam claras?</label>
+        <div class="radio-grid" id="q-expectativas">
+          <div class="radio-card" onclick="pickRadio(this,'q-expectativas')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Totalmente claras e documentadas</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-expectativas')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente claras</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-expectativas')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não estavam claras</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O profissional entendia cada item abaixo:</label>
+        <table class="matrix-table">
+          <thead><tr><th>Item</th><th>Sim</th><th>Parcial</th><th>Não</th></tr></thead>
+          <tbody>
+            <tr><td>Responsabilidades do cargo</td><td><div class="m-dot" onclick="pickMatrix(this,'m-resp',0)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-resp',1)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-resp',2)"></div></td></tr>
+            <tr><td>Forma esperada de entrega</td><td><div class="m-dot" onclick="pickMatrix(this,'m-entrega',0)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-entrega',1)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-entrega',2)"></div></td></tr>
+            <tr><td>Cultura da empresa</td><td><div class="m-dot" onclick="pickMatrix(this,'m-cultura',0)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-cultura',1)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-cultura',2)"></div></td></tr>
+            <tr><td>Padrões de comunicação</td><td><div class="m-dot" onclick="pickMatrix(this,'m-comm',0)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-comm',1)"></div></td><td><div class="m-dot" onclick="pickMatrix(this,'m-comm',2)"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(2)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(4)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 4: SINAIS -->
+    <div class="form-section" id="sec-4">
+      <div class="section-title">Sinais antecipados</div>
+      <div class="section-subtitle">O sistema permitiu a detecção precoce de problemas?</div>
+      <div class="field">
+        <label class="field-label">Houve sinais antecipados de que algo não estava funcionando?</label>
+        <div class="radio-grid" id="q-sinais">
+          <div class="radio-card" onclick="pickRadio(this,'q-sinais')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, sinais claros e recorrentes</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-sinais')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, mas sutis e difíceis de perceber</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-sinais')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — surgiu de forma repentina</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Quais foram os principais sinais? <span>(selecione todos que se aplicam)</span></label>
+        <div class="check-grid" id="q-sinais-tipos">
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Baixa produtividade ou entregas atrasadas</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Dificuldade de colaboração com o time</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Problemas de comunicação</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Qualidade técnica abaixo do esperado</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Baixo engajamento ou comprometimento</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Conflitos interpessoais</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Ausências frequentes</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Esses sinais foram discutidos com o profissional quando apareceram?</label>
+        <div class="radio-grid" id="q-sinais-discussao">
+          <div class="radio-card" onclick="pickRadio(this,'q-sinais-discussao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, abordados prontamente</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-sinais-discussao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — com atraso ou de forma incompleta</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-sinais-discussao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não foram discutidos</div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(3)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(5)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 5: ONBOARDING -->
+    <div class="form-section" id="sec-5">
+      <div class="section-title">Processo de integração</div>
+      <div class="section-subtitle">O onboarding deu ao profissional as condições para ter sucesso?</div>
+      <div class="field">
+        <label class="field-label">O onboarding desse profissional foi adequado?</label>
+        <div class="radio-grid" id="q-onboarding">
+          <div class="radio-card" onclick="pickRadio(this,'q-onboarding')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, bem estruturado com marcos e acompanhamento</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-onboarding')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — processo informal ou incompleto</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-onboarding')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — o profissional foi inserido sem estrutura</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O profissional recebeu apoio (buddy/mentor) para se adaptar?</label>
+        <div class="radio-grid" id="q-buddy">
+          <div class="radio-card" onclick="pickRadio(this,'q-buddy')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, teve buddy/mentor e acompanhamento</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-buddy')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — apoio limitado</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-buddy')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — foi deixado por conta própria</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O que poderia ter sido feito diferente no onboarding? <span>(opcional)</span></label>
+        <textarea class="text-input" id="q-onb-obs" placeholder="Descreva melhorias identificadas..."></textarea>
+      </div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(4)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(6)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 6: TIME E SELEÇÃO -->
+    <div class="form-section" id="sec-6">
+      <div class="section-title">Time e processo seletivo</div>
+      <div class="section-subtitle">O ambiente e a contratação contribuíram para o problema?</div>
+      <div class="field">
+        <label class="field-label">O ambiente do time influenciou o desempenho do profissional?</label>
+        <div class="radio-grid" id="q-ambiente">
+          <div class="radio-card" onclick="pickRadio(this,'q-ambiente')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Ajudava — ambiente saudável e colaborativo</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-ambiente')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Neutro — sem impacto positivo ou negativo</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-ambiente')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Dificultava — ambiente com tensões ou problemas</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Como você avalia a liderança do time neste caso?</label>
+        <div class="scale-row" id="q-lideranca">
+          <div class="scale-card" onclick="pickScale(this,'q-lideranca',1)">1</div>
+          <div class="scale-card" onclick="pickScale(this,'q-lideranca',2)">2</div>
+          <div class="scale-card" onclick="pickScale(this,'q-lideranca',3)">3</div>
+          <div class="scale-card" onclick="pickScale(this,'q-lideranca',4)">4</div>
+          <div class="scale-card" onclick="pickScale(this,'q-lideranca',5)">5</div>
+        </div>
+        <div class="scale-label-row"><span>Inadequada</span><span>Excelente</span></div>
+      </div>
+      <div class="field">
+        <label class="field-label">O perfil contratado era adequado para a função?</label>
+        <div class="radio-grid" id="q-perfil">
+          <div class="radio-card" onclick="pickRadio(this,'q-perfil')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, perfil correto para a função</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-perfil')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente alinhado</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-perfil')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — houve erro no processo seletivo</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Aspectos culturais/comportamentais foram avaliados na seleção?</label>
+        <div class="radio-grid" id="q-selecao-cultural">
+          <div class="radio-card" onclick="pickRadio(this,'q-selecao-cultural')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, com avaliação cultural estruturada</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-selecao-cultural')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — só intuição do entrevistador</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-selecao-cultural')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — foco apenas técnico</div>
+        </div>
+      </div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(5)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(7)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 7: APRENDIZADOS -->
+    <div class="form-section" id="sec-7">
+      <div class="section-title">Aprendizados e prioridades</div>
+      <div class="section-subtitle">O que este caso nos ensina sobre o sistema?</div>
+      <div class="field">
+        <label class="field-label">Que áreas precisam de melhoria? <span>(selecione todas que se aplicam)</span></label>
+        <div class="check-grid" id="q-melhorias">
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Processo de contratação / critérios de seleção</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Onboarding e integração</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Clareza de expectativas do cargo</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Comunicação e feedback contínuo</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Acompanhamento de performance</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Liderança e gestão do time</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Cultura organizacional</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Observações finais <span>(opcional)</span></label>
+        <textarea class="text-input" id="q-obs" placeholder="Qualquer contexto adicional relevante..."></textarea>
+      </div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(6)">← Voltar</button>
+        <button class="btn-form-next" onclick="submitForm()" style="background:#6dd84a;color:#0a1628;">Enviar resposta ✓</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="form-section" id="sec-success">
+      <div class="success-screen">
+        <div class="success-icon">✓</div>
+        <h2>Resposta registrada!</h2>
+        <p>Os dados foram salvos. Você pode responder outro caso ou acessar o dashboard para ver os resultados consolidados.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="resetForm()">Novo formulário →</button>
+          <button class="btn-outline" onclick="showPage('dashboard')">Ver dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+  <div class="dash-wrap">
+    <div class="dash-header">
+      <h2>Dashboard de desligamentos</h2>
+      <p>Análise consolidada de todas as respostas coletadas</p>
+    </div>
+
+    <div id="dash-empty" class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>Nenhuma resposta ainda</h3>
+      <p>Preencha o formulário para ver os dados aqui.</p>
+      <button class="btn-primary" style="margin-top:1.5rem;" onclick="showPage('form')">Preencher formulário →</button>
+    </div>
+
+    <div id="dash-content" style="display:none;">
+      <!-- KPIs -->
+      <div class="kpi-grid" id="kpi-grid"></div>
+
+      <!-- FILTER -->
+      <div class="filter-row">
+        <span style="font-size:13px;color:var(--muted);align-self:center;">Filtrar por risco:</span>
+        <button class="filter-btn active" onclick="filterDash('todos',this)">Todos</button>
+        <button class="filter-btn" onclick="filterDash('alto',this)">Alto</button>
+        <button class="filter-btn" onclick="filterDash('medio',this)">Médio</button>
+        <button class="filter-btn" onclick="filterDash('baixo',this)">Baixo</button>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Motivos de desligamento</div>
+          <div class="chart-sub">Distribuição por causa principal</div>
+          <div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-motivos"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Nível de risco sistêmico</div>
+          <div class="chart-sub">Por caso analisado</div>
+          <div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-risco"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Qualidade do onboarding</div>
+          <div class="chart-sub">Avaliação por caso</div>
+          <div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-onboarding"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avaliação de liderança</div>
+          <div class="chart-sub">Distribuição de notas (1–5)</div>
+          <div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-lideranca"></canvas></div>
+        </div>
+        <div class="chart-card wide">
+          <div class="chart-title">Áreas que precisam melhorar</div>
+          <div class="chart-sub">Frequência nas respostas</div>
+          <div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-melhorias"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="actions-section">
+        <div class="section-head">
+          <h3>Plano de ações prioritárias</h3>
+          <span>Gerado a partir dos padrões identificados</span>
+        </div>
+        <div class="action-list" id="action-list"></div>
+      </div>
+
+      <!-- RESPONSES TABLE -->
+      <div class="chart-card" style="margin-top:0;">
+        <div class="chart-title" style="margin-bottom:4px;">Respostas individuais</div>
+        <div class="chart-sub">Histórico de todos os formulários enviados</div>
+        <div class="resp-table-wrap">
+          <table class="resp-table" id="resp-table">
+            <thead><tr><th>#</th><th>Gestor</th><th>Time</th><th>Período</th><th>Motivo</th><th>Onboarding</th><th>Risco</th></tr></thead>
+            <tbody id="resp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Resposta salva com sucesso!</div>
+
+<script>
+// ——— STATE ———
+let responses = JSON.parse(localStorage.getItem('deslig-responses') || '[]');
+let currentSection = 1;
+let matrices = {};
+let scales = {};
+let activeFilter = 'todos';
+let charts = {};
+
+// ——— NAV ———
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const tabs = { home: 0, form: 1, dashboard: 2 };
+  document.querySelectorAll('.nav-tab')[tabs[id]]?.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'home') updateHomeStats();
+  window.scrollTo(0, 0);
+}
+
+// ——— FORM SECTIONS ———
+const TOTAL = 7;
+function buildProgress() {
+  const wrap = document.getElementById('progress-steps');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'progress-step' + (i < currentSection ? ' done' : i === currentSection ? ' active' : '');
+    wrap.appendChild(d);
+  }
+  const lbl = document.getElementById('progress-label');
+  if (currentSection <= TOTAL) lbl.textContent = `Passo ${currentSection} de ${TOTAL}`;
+  else lbl.textContent = 'Concluído!';
+}
+function goSection(n) {
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+n).classList.add('active');
+  currentSection = n;
+  buildProgress();
+  window.scrollTo(0, 0);
+}
+buildProgress();
+
+// ——— PICKERS ———
+function pickRadio(el, group) {
+  document.querySelectorAll('#'+group+' .radio-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pickCheck(el) { el.classList.toggle('sel'); }
+function pickScale(el, group, val) {
+  document.querySelectorAll('#'+group+' .scale-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  scales[group] = val;
+}
+function pickMatrix(el, row, col) {
+  el.closest('tr').querySelectorAll('.m-dot').forEach(d => d.classList.remove('sel'));
+  el.classList.add('sel');
+  matrices[row] = col;
+}
+
+// ——— COLLECT ———
+function getRadio(group) {
+  const sel = document.querySelector('#'+group+' .radio-card.sel');
+  return sel ? sel.textContent.trim() : '';
+}
+function getChecks(group) {
+  return [...document.querySelectorAll('#'+group+' .check-card.sel')].map(c => c.textContent.trim());
+}
+
+// ——— SCORE ———
+function calcScore(d) {
+  let s = 0;
+  if (d.feedback.includes('Não')) s += 3;
+  else if (d.feedback.includes('Parcial')) s += 1;
+  if (d.pip.includes('Não')) s += 3;
+  else if (d.pip.includes('informal')) s += 1;
+  if (d.expectativas.includes('Não')) s += 2;
+  else if (d.expectativas.includes('Parcial')) s += 1;
+  if (d.onboarding.includes('sem estrutura')) s += 3;
+  else if (d.onboarding.includes('Parcial')) s += 1;
+  if (d.buddy.includes('conta')) s += 2;
+  if (d.ambiente.includes('Dificultava')) s += 2;
+  if (d.perfil.includes('erro')) s += 3;
+  else if (d.perfil.includes('Parcial')) s += 1;
+  if (d.selecaoCultural.includes('técnico')) s += 2;
+  if (d.lideranca <= 2) s += 2;
+  if (d.sinaisDiscussao.includes('Não')) s += 2;
+  return s;
+}
+function riskLevel(score) {
+  if (score >= 10) return 'alto';
+  if (score >= 5) return 'medio';
+  return 'baixo';
+}
+function riskLabel(r) { return { alto: 'Alto', medio: 'Médio', baixo: 'Baixo' }[r]; }
+
+// ——— SUBMIT ———
+function submitForm() {
+  const d = {
+    id: Date.now(),
+    gestor: document.getElementById('f-gestor').value || 'Anônimo',
+    time: document.getElementById('f-time').value || '—',
+    periodo: document.getElementById('f-periodo').value || '—',
+    motivo: getRadio('q-motivo'),
+    feedback: getRadio('q-feedback'),
+    pip: getRadio('q-pip'),
+    expectativas: getRadio('q-expectativas'),
+    matrizResp: matrices['m-resp'] ?? 0,
+    matrizEntrega: matrices['m-entrega'] ?? 0,
+    matrizCultura: matrices['m-cultura'] ?? 0,
+    matrizComm: matrices['m-comm'] ?? 0,
+    sinais: getRadio('q-sinais'),
+    sinaisTipos: getChecks('q-sinais-tipos'),
+    sinaisDiscussao: getRadio('q-sinais-discussao'),
+    onboarding: getRadio('q-onboarding'),
+    buddy: getRadio('q-buddy'),
+    onbObs: document.getElementById('q-onb-obs').value,
+    ambiente: getRadio('q-ambiente'),
+    lideranca: scales['q-lideranca'] || 3,
+    perfil: getRadio('q-perfil'),
+    selecaoCultural: getRadio('q-selecao-cultural'),
+    melhorias: getChecks('q-melhorias'),
+    obs: document.getElementById('q-obs').value,
+    ts: new Date().toLocaleDateString('pt-BR')
+  };
+  d.score = calcScore(d);
+  d.risk = riskLevel(d.score);
+  responses.push(d);
+  localStorage.setItem('deslig-responses', JSON.stringify(responses));
+  updateBadge();
+  goSection('success');
+  showToast();
+}
+
+function updateBadge() {
+  document.getElementById('resp-count').textContent = responses.length;
+}
+updateBadge();
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function resetForm() {
+  document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.check-card').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.scale-card').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.m-dot').forEach(c => c.classList.remove('sel'));
+  document.querySelectorAll('.text-input').forEach(i => { if(i.tagName==='INPUT'||i.tagName==='TEXTAREA') i.value=''; });
+  matrices = {}; scales = {};
+  goSection(1);
+}
+
+// ——— HOME STATS ———
+function updateHomeStats() {
+  document.getElementById('hs-total').textContent = responses.length;
+  document.getElementById('hs-alto').textContent = responses.filter(r => r.risk === 'alto').length;
+  document.getElementById('hs-medio').textContent = responses.filter(r => r.risk === 'medio').length;
+  document.getElementById('hs-baixo').textContent = responses.filter(r => r.risk === 'baixo').length;
+}
+updateHomeStats();
+
+// ——— DASHBOARD ———
+function filterDash(level, btn) {
+  activeFilter = level;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDashboard();
+}
+
+function filteredResponses() {
+  if (activeFilter === 'todos') return responses;
+  return responses.filter(r => r.risk === activeFilter);
+}
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => { try { c.destroy(); } catch(e){} });
+  charts = {};
+}
+
+function renderDashboard() {
+  const data = filteredResponses();
+  if (responses.length === 0) {
+    document.getElementById('dash-empty').style.display = 'block';
+    document.getElementById('dash-content').style.display = 'none';
+    return;
+  }
+  document.getElementById('dash-empty').style.display = 'none';
+  document.getElementById('dash-content').style.display = 'block';
+  destroyCharts();
+  renderKPIs(data);
+  renderCharts(data);
+  renderActions(data);
+  renderTable(data);
+}
+
+function renderKPIs(data) {
+  const n = data.length;
+  const altos = data.filter(r => r.risk === 'alto').length;
+  const avgLider = n > 0 ? (data.reduce((a,r) => a+(r.lideranca||3), 0)/n).toFixed(1) : '—';
+  const semPIP = data.filter(r => r.pip && r.pip.includes('Não')).length;
+  const pctAlto = n > 0 ? Math.round(altos/n*100) : 0;
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Respostas (filtro atual)</div>
+      <div class="kpi-value" style="color:var(--accent2)">${n}</div>
+      <div class="kpi-sub">de ${responses.length} total</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${n>0?100:0}%;background:var(--accent2)"></div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Risco sistêmico alto</div>
+      <div class="kpi-value" style="color:var(--danger)">${altos}</div>
+      <div class="kpi-sub">${pctAlto}% dos casos</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${pctAlto}%;background:var(--danger)"></div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Nota média de liderança</div>
+      <div class="kpi-value" style="color:${avgLider>=4?'var(--success)':avgLider>=3?'var(--warning)':'var(--danger)'}">${avgLider}</div>
+      <div class="kpi-sub">escala de 1 a 5</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${avgLider!=='—'?avgLider/5*100:0}%;background:var(--warning)"></div></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Sem plano de melhoria</div>
+      <div class="kpi-value" style="color:var(--warning)">${semPIP}</div>
+      <div class="kpi-sub">casos sem PIP antes do deslig.</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${n>0?semPIP/n*100:0}%;background:var(--warning)"></div></div>
+    </div>
+  `;
+}
+
+const CHART_DEFAULTS = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { backgroundColor: '#0f1e35', borderColor: '#38d2b430', borderWidth: 1, titleColor: '#e8f4f8', bodyColor: '#7aa3be', padding: 10 } }
+};
+const COLORS = ['#6dd84a','#38d2b4','#1a8fa8','#f0c040','#e85050','#82e85e','#56b8a0'];
+
+function renderCharts(data) {
+  // Motivos
+  const motivoCount = {};
+  const motivoMap = {
+    'Performance técnica': 'Téc.',
+    'Performance comportamental': 'Comp.',
+    'Desalinhamento cultural': 'Cultural',
+    'Mudança estratégica': 'Estratégia',
+    'Reestruturação': 'Reest.',
+    'Outro motivo': 'Outro'
+  };
+  data.forEach(r => {
+    const k = Object.keys(motivoMap).find(m => r.motivo && r.motivo.includes(m)) || 'Outro';
+    const label = motivoMap[k] || 'Outro';
+    motivoCount[label] = (motivoCount[label] || 0) + 1;
+  });
+  charts.motivos = new Chart(document.getElementById('chart-motivos'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(motivoCount),
+      datasets: [{ data: Object.values(motivoCount), backgroundColor: COLORS, borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, legend: { display: true, position: 'bottom', labels: { color: '#7aa3be', font: { size: 11 }, boxWidth: 10, padding: 12 } } }, cutout: '65%' }
+  });
+
+  // Risco
+  const rc = { Alto: 0, Médio: 0, Baixo: 0 };
+  data.forEach(r => { if(r.risk==='alto') rc['Alto']++; else if(r.risk==='medio') rc['Médio']++; else rc['Baixo']++; });
+  charts.risco = new Chart(document.getElementById('chart-risco'), {
+    type: 'doughnut',
+    data: { labels: ['Alto','Médio','Baixo'], datasets: [{ data: [rc.Alto, rc.Médio, rc.Baixo], backgroundColor: ['#e85050','#f0c040','#6dd84a'], borderWidth: 0, hoverOffset: 4 }] },
+    options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, legend: { display: true, position: 'bottom', labels: { color: '#7aa3be', font: { size: 11 }, boxWidth: 10, padding: 12 } } }, cutout: '65%' }
+  });
+
+  // Onboarding
+  const oc = { 'Sim': 0, 'Parcial': 0, 'Não': 0 };
+  data.forEach(r => {
+    if(r.onboarding.includes('Sim')) oc['Sim']++;
+    else if(r.onboarding.includes('Parcial')) oc['Parcial']++;
+    else oc['Não']++;
+  });
+  charts.onboarding = new Chart(document.getElementById('chart-onboarding'), {
+    type: 'bar',
+    data: { labels: ['Estruturado','Parcial','Sem estrutura'], datasets: [{ data: [oc.Sim, oc.Parcial, oc.Não], backgroundColor: ['#6dd84a90','#f0c04090','#e8505090'], borderRadius: 6, borderWidth: 0 }] },
+    options: { ...CHART_DEFAULTS, scales: { x: { ticks: { color: '#7aa3be', font: { size: 11 } }, grid: { color: '#38d2b410' } }, y: { ticks: { color: '#7aa3be', font: { size: 11 }, stepSize: 1 }, grid: { color: '#38d2b410' } } } }
+  });
+
+  // Liderança
+  const lc = { 1:0, 2:0, 3:0, 4:0, 5:0 };
+  data.forEach(r => { lc[r.lideranca||3]++; });
+  charts.lideranca = new Chart(document.getElementById('chart-lideranca'), {
+    type: 'bar',
+    data: { labels: ['1','2','3','4','5'], datasets: [{ data: [lc[1],lc[2],lc[3],lc[4],lc[5]], backgroundColor: ['#e8505090','#e8505060','#f0c04080','#6dd84a60','#6dd84a90'], borderRadius: 6, borderWidth: 0 }] },
+    options: { ...CHART_DEFAULTS, scales: { x: { ticks: { color: '#7aa3be', font: { size: 11 } }, grid: { color: '#38d2b410' } }, y: { ticks: { color: '#7aa3be', font: { size: 11 }, stepSize: 1 }, grid: { color: '#38d2b410' } } } }
+  });
+
+  // Melhorias
+  const areas = ['Processo de contratação / critérios de seleção', 'Onboarding e integração', 'Clareza de expectativas do cargo', 'Comunicação e feedback contínuo', 'Acompanhamento de performance', 'Liderança e gestão do time', 'Cultura organizacional'];
+  const shortAreas = ['Contratação','Onboarding','Expectativas','Feedback','Performance','Liderança','Cultura'];
+  const mc = areas.map(a => data.reduce((acc, r) => acc + (r.melhorias && r.melhorias.some(m => m.includes(a.split('/')[0].trim())) ? 1 : 0), 0));
+  charts.melhorias = new Chart(document.getElementById('chart-melhorias'), {
+    type: 'bar',
+    data: { labels: shortAreas, datasets: [{ data: mc, backgroundColor: '#38d2b490', borderRadius: 6, borderWidth: 0, hoverBackgroundColor: '#38d2b4' }] },
+    options: { ...CHART_DEFAULTS, indexAxis: 'y', scales: { x: { ticks: { color: '#7aa3be', font: { size: 11 }, stepSize: 1 }, grid: { color: '#38d2b410' } }, y: { ticks: { color: '#7aa3be', font: { size: 12 } }, grid: { color: '#38d2b410' } } } }
+  });
+}
+
+function renderActions(data) {
+  const n = data.length;
+  if (n === 0) { document.getElementById('action-list').innerHTML = '<p style="color:var(--muted);font-size:14px;">Sem dados para gerar ações.</p>'; return; }
+
+  const score_feedback = data.filter(r => r.feedback && (r.feedback.includes('Não') || r.feedback.includes('Parcial'))).length;
+  const score_pip = data.filter(r => r.pip && (r.pip.includes('Não') || r.pip.includes('informal'))).length;
+  const score_onb = data.filter(r => r.onboarding && (r.onboarding.includes('sem estrutura') || r.onboarding.includes('Parcial'))).length;
+  const score_buddy = data.filter(r => r.buddy && (r.buddy.includes('conta') || r.buddy.includes('Parcial'))).length;
+  const score_lider = data.filter(r => (r.lideranca||3) <= 3).length;
+  const score_selecao = data.filter(r => r.selecaoCultural && (r.selecaoCultural.includes('técnico') || r.selecaoCultural.includes('intuição'))).length;
+  const score_expectativas = data.filter(r => r.expectativas && (r.expectativas.includes('Não') || r.expectativas.includes('Parcial'))).length;
+  const score_ambiente = data.filter(r => r.ambiente && r.ambiente.includes('Dificultava')).length;
+  const score_sinais = data.filter(r => r.sinaisDiscussao && r.sinaisDiscussao.includes('Não')).length;
+
+  const actions = [];
+
+  if (score_pip > 0) actions.push({
+    p: 'imediata', count: score_pip, n,
+    title: 'Criar processo formal de Plano de Melhoria (PIP)',
+    desc: `Antes de qualquer desligamento por performance, deve existir um PIP com metas claras, timeline de 30/60/90 dias e acompanhamento regular documentado. Isso protege a empresa e o colaborador.`,
+    area: 'RH / Gestão'
+  });
+
+  if (score_feedback > 0) actions.push({
+    p: 'imediata', count: score_feedback, n,
+    title: 'Implementar rituais formais de feedback contínuo',
+    desc: `Criar cadência de 1:1s quinzenais com registro escrito. Cada conversa deve documentar pontos de melhoria, prazos e próximos passos — sem isso, o colaborador fica sem referência de desempenho.`,
+    area: 'Gestão de performance'
+  });
+
+  if (score_expectativas > 0) actions.push({
+    p: 'imediata', count: score_expectativas, n,
+    title: 'Documentar expectativas claras para cada cargo',
+    desc: `Criar Job Description com responsabilidades, métricas de sucesso e comportamentos esperados. Este documento deve ser entregue e discutido na primeira semana — não apenas no processo seletivo.`,
+    area: 'Clareza de função'
+  });
+
+  if (score_sinais > 0) actions.push({
+    p: 'curto', count: score_sinais, n,
+    title: 'Implementar sistema de early warning de performance',
+    desc: `Sinais existiam mas não geraram ação. Criar check-in de saúde quinzenal no qual cada membro avalia seu próprio engajamento. O gestor recebe um alerta automático quando a nota cai.`,
+    area: 'Gestão de performance'
+  });
+
+  if (score_onb > 0) actions.push({
+    p: 'curto', count: score_onb, n,
+    title: 'Estruturar programa de onboarding com trilha de 90 dias',
+    desc: `Criar trilha com marcos nos dias 7, 30, 60 e 90. Cada marco deve ter checklist, reunião de alinhamento com o gestor e avaliação mútua de adaptação — para o colaborador e para o time.`,
+    area: 'Onboarding'
+  });
+
+  if (score_buddy > 0) actions.push({
+    p: 'curto', count: score_buddy, n,
+    title: 'Criar programa de buddy para novos membros',
+    desc: `Cada contratação deve ter um buddy designado do time por pelo menos 60 dias. O buddy facilita integração cultural, técnica e social — reduz o tempo até a primeira entrega de valor.`,
+    area: 'Onboarding'
+  });
+
+  if (score_selecao > 0) actions.push({
+    p: 'curto', count: score_selecao, n,
+    title: 'Adicionar entrevista cultural/comportamental no processo seletivo',
+    desc: `Criar roteiro de entrevista comportamental baseado nos valores da empresa usando a técnica STAR (Situação, Tarefa, Ação, Resultado). Reduz viés e melhora consistência das decisões de contratação.`,
+    area: 'Recrutamento'
+  });
+
+  if (score_ambiente > 0) actions.push({
+    p: 'imediata', count: score_ambiente, n,
+    title: 'Tratar dinâmicas disfuncionais nos times identificados',
+    desc: `Realizar retrospectiva de saúde do time com facilitação neutra. Identificar os principais bloqueadores de colaboração e criar itens de ação concretos com responsáveis e prazo definido.`,
+    area: 'Dinâmica de time'
+  });
+
+  if (score_lider > 0) actions.push({
+    p: 'medio', count: score_lider, n,
+    title: 'Investir em capacitação das lideranças avaliadas negativamente',
+    desc: `Gestores com nota 1–3 neste ciclo devem ter um plano de desenvolvimento em gestão de pessoas: feedback, condução de 1:1s, reconhecimento e criação de ambiente seguro. Pode ser feito via coaching ou programa interno.`,
+    area: 'Liderança'
+  });
+
+  actions.push({
+    p: 'medio', count: n, n,
+    title: 'Criar retro organizacional trimestral de desligamentos',
+    desc: `A cada trimestre, analisar padrões de desligamentos com este dashboard. Se os mesmos motivos se repetem, existe um problema sistêmico que precisa de intervenção estrutural — não apenas individual.`,
+    area: 'Melhoria contínua'
+  });
+
+  const badges = { imediata: ['badge-danger','Imediata'], curto: ['badge-warning','Curto prazo'], medio: ['badge-info','Médio prazo'] };
+  const sorted = [...actions].sort((a,b) => {
+    const order = { imediata: 0, curto: 1, medio: 2 };
+    return order[a.p] - order[b.p];
+  });
+
+  document.getElementById('action-list').innerHTML = sorted.map(ac => {
+    const pct = Math.round(ac.count / ac.n * 100);
+    return `
+    <div class="action-item p-${ac.p}">
+      <div class="action-priority-dot"></div>
+      <div class="action-body">
+        <div class="action-badges">
+          <span class="badge ${badges[ac.p][0]}">${badges[ac.p][1]}</span>
+          <span class="badge-area">${ac.area}</span>
+        </div>
+        <div class="action-title">${ac.title}</div>
+        <div class="action-desc">${ac.desc}</div>
+        <div class="action-count">Presente em ${ac.count} de ${ac.n} caso(s) — ${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable(data) {
+  const riskMap = { alto: 'risk-alto', medio: 'risk-medio', baixo: 'risk-baixo' };
+  const riskLabelMap = { alto: 'Alto', medio: 'Médio', baixo: 'Baixo' };
+  const motivoShort = m => {
+    if (!m) return '—';
+    if (m.includes('técnica')) return 'Perf. técnica';
+    if (m.includes('comportamental')) return 'Perf. comport.';
+    if (m.includes('cultural')) return 'Cultura';
+    if (m.includes('estratégica')) return 'Estratégia';
+    if (m.includes('truturação')) return 'Reestruturação';
+    return 'Outro';
+  };
+  const onbShort = o => {
+    if (!o) return '—';
+    if (o.includes('Sim')) return 'Sim';
+    if (o.includes('Parcial')) return 'Parcial';
+    return 'Não';
+  };
+  document.getElementById('resp-tbody').innerHTML = data.map((r, i) => `
+    <tr>
+      <td style="color:var(--muted)">${i+1}</td>
+      <td>${r.gestor}</td>
+      <td style="color:var(--muted)">${r.time}</td>
+      <td style="color:var(--muted)">${r.periodo}</td>
+      <td>${motivoShort(r.motivo)}</td>
+      <td>${onbShort(r.onboarding)}</td>
+      <td><span class="risk-pill ${riskMap[r.risk]}">${riskLabelMap[r.risk]}</span></td>
+    </tr>
+  `).join('');
+}
+</script>
+</body>
+</html>
