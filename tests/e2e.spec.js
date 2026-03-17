@@ -6,6 +6,24 @@ const { test, expect } = require('@playwright/test');
 // Fluxo: Home → Formulário (7 seções) → Submissão → Dashboard
 // ═══════════════════════════════════════════════════════════
 
+// Helper: login as admin
+async function loginAsAdmin(page) {
+  // Seed admin user if not present
+  await page.evaluate(async () => {
+    const users = JSON.parse(localStorage.getItem('deslig-users') || '[]');
+    if (users.length === 0) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode('admin123_deslig_salt_2026');
+      const hash = await crypto.subtle.digest('SHA-256', data);
+      const hashHex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+      users.push({ username: 'admin', passwordHash: hashHex, role: 'admin' });
+      localStorage.setItem('deslig-users', JSON.stringify(users));
+    }
+    // Set session directly
+    sessionStorage.setItem('deslig-session', JSON.stringify({ username: 'admin', role: 'admin' }));
+  });
+}
+
 const MOCK_CASES = [
   {
     gestor: 'Maria Fernanda',
@@ -281,6 +299,7 @@ test.describe('Formulário — Preenchimento e Submissão', () => {
 test.describe('Dashboard — Visualização com dados mockados', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await loginAsAdmin(page);
     // Injetar 3 casos mockados no localStorage
     const mockData = [
       { id: 1001, gestor: 'Maria Fernanda', time: 'Time Condado', periodo: 'Jan 2026', motivo: 'Performance técnica abaixo do esperado', feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria', expectativas: 'Parcialmente claras', onboarding: 'Não — o profissional foi inserido sem estrutura', buddy: 'Não — foi deixado por conta própria', ambiente: 'Dificultava — ambiente com tensões ou problemas', lideranca: 2, perfil: 'Não — houve erro no processo seletivo', selecaoCultural: 'Não — foco apenas técnico', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Baixa produtividade ou entregas atrasadas', 'Problemas de comunicação', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Não foram discutidos', melhorias: ['Processo de contratação / critérios de seleção', 'Onboarding e integração', 'Comunicação e feedback contínuo', 'Liderança e gestão do time'], obs: '', score: 22, risk: 'alto', ts: '17/03/2026' },
@@ -305,6 +324,7 @@ test.describe('Dashboard — Visualização com dados mockados', () => {
 
   test('deve renderizar dashboard com KPIs corretos', async ({ page }) => {
     await page.click('button:has-text("Dashboard")');
+    // Auth session set in beforeEach, so dashboard should load
     await expect(page.locator('#dash-content')).toBeVisible();
     await expect(page.locator('#dash-empty')).not.toBeVisible();
 
@@ -439,6 +459,7 @@ test.describe('Dashboard — Visualização com dados mockados', () => {
 test.describe('Navegação', () => {
   test('tabs de navegação devem funcionar', async ({ page }) => {
     await page.goto('/');
+    await loginAsAdmin(page);
 
     await page.click('button:has-text("Formulário")');
     await expect(page.locator('#page-form')).toBeVisible();

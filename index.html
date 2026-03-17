@@ -539,6 +539,89 @@
   }
   .btn-admin-delete:hover { background: rgba(232,80,80,0.15); border-color: var(--danger); }
 
+  /* LOGIN PAGE */
+  .login-page {
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 60px); padding: 2rem;
+  }
+  .login-card {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-lg); padding: 2.5rem;
+    max-width: 400px; width: 100%; animation: fadeIn 0.3s ease;
+  }
+  .login-card h2 {
+    font-family: var(--font-head); font-size: 22px; font-weight: 800;
+    margin-bottom: 6px; text-align: center; letter-spacing: -0.02em;
+  }
+  .login-card .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 2rem; }
+  .login-card .field { margin-bottom: 1.25rem; }
+  .login-card .field-label { font-size: 13px; margin-bottom: 6px; }
+  .login-error {
+    font-size: 12px; color: var(--danger); text-align: center;
+    margin-bottom: 1rem; display: none;
+  }
+  .login-error.show { display: block; }
+  .login-btn {
+    width: 100%; padding: 12px; border-radius: var(--radius);
+    background: var(--accent); color: #0a1628; font-family: var(--font-body);
+    font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .login-btn:hover { background: #82e85e; }
+  .nav-user {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+  }
+  .nav-user-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px;
+    border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .nav-user-badge.role-admin { background: rgba(232,80,80,0.12); color: var(--danger); }
+  .nav-user-badge.role-viewer { background: rgba(56,210,180,0.12); color: var(--accent2); }
+  .btn-logout {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.15s;
+  }
+  .btn-logout:hover { color: var(--text); border-color: var(--border2); }
+
+  /* USER MANAGEMENT */
+  .user-mgmt-section { margin-bottom: 1.5rem; }
+  .user-mgmt-grid { display: flex; flex-direction: column; gap: 8px; }
+  .user-mgmt-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 0.75rem 1.25rem;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem; flex-wrap: wrap;
+  }
+  .user-mgmt-info { display: flex; align-items: center; gap: 10px; }
+  .user-mgmt-name { font-weight: 600; font-size: 14px; }
+  .user-mgmt-role { font-size: 12px; color: var(--muted); }
+  .add-user-form {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;
+    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .add-user-form input, .add-user-form select {
+    padding: 8px 12px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: var(--font-body); font-size: 13px;
+  }
+  .add-user-form input:focus, .add-user-form select:focus { outline: none; border-color: var(--accent2); }
+  .add-user-form select { cursor: pointer; }
+  .add-user-form select option { background: var(--surface); color: var(--text); }
+  .btn-add-user {
+    padding: 8px 16px; border-radius: 8px;
+    background: var(--accent); color: #0a1628; font-family: var(--font-body);
+    font-size: 12px; font-weight: 600; border: none; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-add-user:hover { background: #82e85e; }
+  .btn-remove-user {
+    background: none; border: 1px solid rgba(232,80,80,0.2); color: var(--danger);
+    font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.15s;
+  }
+  .btn-remove-user:hover { background: rgba(232,80,80,0.1); border-color: var(--danger); }
+
   @media (max-width: 640px) {
     .kpi-grid { grid-template-columns: 1fr 1fr; }
     nav { padding: 0 1rem; }
@@ -556,9 +639,14 @@
   <div class="nav-tabs" id="nav-tabs">
     <button class="nav-tab active" onclick="showPage('home')">Início</button>
     <button class="nav-tab" onclick="showPage('form')">Formulário</button>
-    <button class="nav-tab" id="dash-tab" onclick="showPage('dashboard')">
+    <button class="nav-tab" id="dash-tab" onclick="requireAuth('dashboard')">
       Dashboard <span class="nav-badge" id="resp-count">0</span>
     </button>
+  </div>
+  <div class="nav-user" id="nav-user" style="display:none;">
+    <span id="nav-user-name"></span>
+    <span class="nav-user-badge" id="nav-user-role"></span>
+    <button class="btn-logout" onclick="logout()">Sair</button>
   </div>
 </nav>
 
@@ -906,6 +994,27 @@
   </div>
 </div>
 
+<!-- LOGIN PAGE -->
+<div class="page" id="page-login">
+  <div class="login-page">
+    <div class="login-card">
+      <h2>🔒 Acesso ao Dashboard</h2>
+      <p class="login-sub">Entre com suas credenciais para acessar os resultados</p>
+      <div class="login-error" id="login-error">⚠ Usuário ou senha incorretos</div>
+      <div class="field">
+        <label class="field-label">Usuário</label>
+        <input type="text" class="text-input" id="login-user" placeholder="seu usuário" autocomplete="username">
+      </div>
+      <div class="field">
+        <label class="field-label">Senha</label>
+        <input type="password" class="text-input" id="login-pass" placeholder="sua senha" autocomplete="current-password">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Entrar</button>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:1.5rem;">Admin padrão: admin / admin123</p>
+    </div>
+  </div>
+</div>
+
 <!-- DASHBOARD PAGE -->
 <div class="page" id="page-dashboard">
   <div class="dash-wrap">
@@ -915,11 +1024,12 @@
         <p>Análise consolidada de todas as respostas coletadas</p>
       </div>
       <div class="dash-actions" id="dash-actions-bar" style="display:none;">
-        <button class="btn-small" onclick="exportCSV()" title="Exportar dados como CSV">📥 Exportar CSV</button>
-        <button class="btn-small" onclick="exportJSON()" title="Exportar dados como JSON">💾 Exportar JSON</button>
-        <button class="btn-small" onclick="document.getElementById('import-json').click()" title="Importar dados de um arquivo JSON">📤 Importar JSON</button>
+        <button class="btn-small admin-only" onclick="exportCSV()" title="Exportar dados como CSV">📥 Exportar CSV</button>
+        <button class="btn-small admin-only" onclick="exportJSON()" title="Exportar dados como JSON">💾 Exportar JSON</button>
+        <button class="btn-small admin-only" onclick="exportExecutiveReport()" title="Gerar relatório executivo">📄 Relatório Executivo</button>
+        <button class="btn-small admin-only" onclick="document.getElementById('import-json').click()" title="Importar dados de um arquivo JSON">📤 Importar JSON</button>
         <input type="file" id="import-json" accept=".json" style="display:none" onchange="importJSON(event)">
-        <button class="btn-danger-outline" onclick="confirmClearAll()" title="Apagar todos os dados">🗑 Limpar dados</button>
+        <button class="btn-danger-outline admin-only" onclick="confirmClearAll()" title="Apagar todos os dados">🗑 Limpar dados</button>
       </div>
     </div>
 
@@ -1015,7 +1125,7 @@
       </div>
 
       <!-- ÁREA ADMINISTRATIVA -->
-      <div class="chart-card" style="margin-top:0;">
+      <div class="chart-card admin-only" style="margin-top:0;" id="admin-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:10px;">
           <div>
             <div class="chart-title" style="margin-bottom:4px;">⚙️ Área administrativa</div>
@@ -1023,6 +1133,26 @@
           </div>
         </div>
         <div id="admin-people-list" class="admin-people-grid"></div>
+      </div>
+
+      <!-- GESTÃO DE USUÁRIOS -->
+      <div class="chart-card admin-only" style="margin-top:0;" id="user-mgmt-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div>
+            <div class="chart-title" style="margin-bottom:4px;">👥 Gestão de usuários</div>
+            <div class="chart-sub" style="margin-bottom:0;">Adicione pessoas autorizadas a visualizar o dashboard</div>
+          </div>
+        </div>
+        <div id="user-mgmt-list" class="user-mgmt-grid"></div>
+        <div class="add-user-form" id="add-user-form">
+          <input type="text" id="new-user-name" placeholder="Usuário" style="flex:1;min-width:120px;">
+          <input type="password" id="new-user-pass" placeholder="Senha" style="flex:1;min-width:120px;">
+          <select id="new-user-role">
+            <option value="viewer">Viewer</option>
+            <option value="admin">Admin</option>
+          </select>
+          <button class="btn-add-user" onclick="addUser()">+ Adicionar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1043,6 +1173,282 @@
 <div class="toast" id="toast">✓ Resposta salva com sucesso!</div>
 
 <script>
+// ════════════════════════════════════════
+// AUTH SYSTEM
+// ════════════════════════════════════════
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password + '_deslig_salt_2026');
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Default admin user seed
+async function seedDefaultAdmin() {
+  const users = JSON.parse(localStorage.getItem('deslig-users') || '[]');
+  if (users.length === 0) {
+    const hash = await hashPassword('admin123');
+    users.push({ username: 'admin', passwordHash: hash, role: 'admin' });
+    localStorage.setItem('deslig-users', JSON.stringify(users));
+  }
+}
+seedDefaultAdmin();
+
+function getUsers() {
+  return JSON.parse(localStorage.getItem('deslig-users') || '[]');
+}
+function saveUsers(users) {
+  localStorage.setItem('deslig-users', JSON.stringify(users));
+}
+function getSession() {
+  const s = sessionStorage.getItem('deslig-session');
+  return s ? JSON.parse(s) : null;
+}
+function setSession(username, role) {
+  sessionStorage.setItem('deslig-session', JSON.stringify({ username, role }));
+}
+function clearSession() {
+  sessionStorage.removeItem('deslig-session');
+}
+function isAdmin() {
+  const s = getSession();
+  return s && s.role === 'admin';
+}
+function isLoggedIn() {
+  return !!getSession();
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  if (!username || !password) {
+    document.getElementById('login-error').textContent = '⚠ Preencha usuário e senha';
+    document.getElementById('login-error').classList.add('show');
+    return;
+  }
+  const hash = await hashPassword(password);
+  const users = getUsers();
+  const user = users.find(u => u.username === username && u.passwordHash === hash);
+  if (!user) {
+    document.getElementById('login-error').textContent = '⚠ Usuário ou senha incorretos';
+    document.getElementById('login-error').classList.add('show');
+    return;
+  }
+  setSession(user.username, user.role);
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  updateAuthUI();
+  showPage('dashboard');
+  showToast('✓ Logado como ' + user.username, 'info');
+}
+
+// Enter key to login
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.getElementById('page-login').classList.contains('active')) {
+    doLogin();
+  }
+});
+
+function logout() {
+  clearSession();
+  updateAuthUI();
+  showPage('home');
+  showToast('Sessão encerrada', 'info');
+}
+
+function requireAuth(page) {
+  if (isLoggedIn()) {
+    showPage(page);
+  } else {
+    showPage('login');
+  }
+}
+
+function updateAuthUI() {
+  const session = getSession();
+  const navUser = document.getElementById('nav-user');
+  if (session) {
+    navUser.style.display = 'flex';
+    document.getElementById('nav-user-name').textContent = session.username;
+    const roleBadge = document.getElementById('nav-user-role');
+    roleBadge.textContent = session.role === 'admin' ? 'Admin' : 'Viewer';
+    roleBadge.className = 'nav-user-badge role-' + session.role;
+  } else {
+    navUser.style.display = 'none';
+  }
+  // Show/hide admin-only elements
+  document.querySelectorAll('.admin-only').forEach(el => {
+    el.style.display = (session && session.role === 'admin') ? '' : 'none';
+  });
+}
+
+// ——— USER MANAGEMENT (Admin only) ———
+async function addUser() {
+  if (!isAdmin()) return;
+  const username = document.getElementById('new-user-name').value.trim();
+  const password = document.getElementById('new-user-pass').value;
+  const role = document.getElementById('new-user-role').value;
+  if (!username || !password) {
+    showToast('⚠ Preencha usuário e senha', 'danger');
+    return;
+  }
+  if (password.length < 4) {
+    showToast('⚠ Senha precisa ter pelo menos 4 caracteres', 'danger');
+    return;
+  }
+  const users = getUsers();
+  if (users.some(u => u.username === username)) {
+    showToast('⚠ Usuário já existe', 'danger');
+    return;
+  }
+  const hash = await hashPassword(password);
+  users.push({ username, passwordHash: hash, role });
+  saveUsers(users);
+  document.getElementById('new-user-name').value = '';
+  document.getElementById('new-user-pass').value = '';
+  renderUserManagement();
+  showToast('✓ Usuário ' + username + ' adicionado como ' + role, 'info');
+}
+
+function removeUser(username) {
+  if (!isAdmin()) return;
+  const session = getSession();
+  if (username === session.username) {
+    showToast('⚠ Você não pode remover seu próprio usuário', 'danger');
+    return;
+  }
+  showConfirm('Remover usuário ' + username + '?', 'O usuário perderá acesso ao dashboard.', () => {
+    const users = getUsers().filter(u => u.username !== username);
+    saveUsers(users);
+    renderUserManagement();
+    showToast('🗑 Usuário ' + username + ' removido', 'danger');
+  });
+}
+
+function renderUserManagement() {
+  const users = getUsers();
+  const list = document.getElementById('user-mgmt-list');
+  if (!list) return;
+  list.innerHTML = users.map(u => {
+    const session = getSession();
+    const isSelf = session && session.username === u.username;
+    return `
+    <div class="user-mgmt-card">
+      <div class="user-mgmt-info">
+        <span class="user-mgmt-name">${escapeHtml(u.username)}</span>
+        <span class="nav-user-badge role-${u.role}" style="font-size:10px;">${u.role === 'admin' ? 'Admin' : 'Viewer'}</span>
+        ${isSelf ? '<span style="font-size:11px;color:var(--accent2);">(você)</span>' : ''}
+      </div>
+      ${!isSelf ? '<button class="btn-remove-user" onclick="removeUser(\'' + escapeHtml(u.username) + '\')">Remover</button>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ——— EXECUTIVE REPORT EXPORT ———
+function exportExecutiveReport() {
+  if (!isAdmin() || responses.length === 0) return;
+  const data = responses;
+  const n = data.length;
+  const altos = data.filter(r => r.risk === 'alto').length;
+  const medios = data.filter(r => r.risk === 'medio').length;
+  const baixos = data.filter(r => r.risk === 'baixo').length;
+  const avgScore = (data.reduce((a,r) => a+(r.score||0), 0)/n).toFixed(1);
+  const avgLider = (data.reduce((a,r) => a+(r.lideranca||3), 0)/n).toFixed(1);
+  const semPIP = data.filter(r => r.pip && r.pip.includes('Não')).length;
+  const semFeedback = data.filter(r => r.feedback && (r.feedback.includes('Não') || r.feedback.includes('Parcial'))).length;
+  const onbRuim = data.filter(r => r.onboarding && (r.onboarding.includes('sem estrutura') || r.onboarding.includes('Parcial'))).length;
+  const ambienteRuim = data.filter(r => r.ambiente && r.ambiente.includes('Dificultava')).length;
+  const liderBaixa = data.filter(r => (r.lideranca||3) <= 2).length;
+
+  // Motivos
+  const motivoCount = {};
+  data.forEach(r => {
+    let m = 'Outro';
+    if (r.motivo) {
+      if (r.motivo.includes('técnica')) m = 'Performance técnica';
+      else if (r.motivo.includes('comportamental')) m = 'Performance comportamental';
+      else if (r.motivo.includes('cultural')) m = 'Desalinhamento cultural';
+      else if (r.motivo.includes('estratégica')) m = 'Mudança estratégica';
+      else if (r.motivo.includes('truturação')) m = 'Reestruturação';
+    }
+    motivoCount[m] = (motivoCount[m] || 0) + 1;
+  });
+  const topMotivos = Object.entries(motivoCount).sort((a,b) => b[1]-a[1]);
+
+  const today = new Date().toLocaleDateString('pt-BR');
+  const BOM = '\uFEFF';
+
+  let report = BOM;
+  report += '='.repeat(60) + '\n';
+  report += '  RELATÓRIO EXECUTIVO — ANÁLISE DE DESLIGAMENTOS\n';
+  report += '='.repeat(60) + '\n';
+  report += `Gerado em: ${today}\n`;
+  report += `Total de casos analisados: ${n}\n\n`;
+
+  report += '-'.repeat(40) + '\n';
+  report += '  RESUMO DE RISCO\n';
+  report += '-'.repeat(40) + '\n';
+  report += `  \u2022 Risco Alto:  ${altos} (${Math.round(altos/n*100)}%)\n`;
+  report += `  \u2022 Risco Médio: ${medios} (${Math.round(medios/n*100)}%)\n`;
+  report += `  \u2022 Risco Baixo: ${baixos} (${Math.round(baixos/n*100)}%)\n`;
+  report += `  \u2022 Score médio: ${avgScore} de 22+\n\n`;
+
+  report += '-'.repeat(40) + '\n';
+  report += '  INDICADORES-CHAVE\n';
+  report += '-'.repeat(40) + '\n';
+  report += `  \u2022 Nota média de liderança: ${avgLider}/5\n`;
+  report += `  \u2022 Casos sem PIP formal: ${semPIP} (${Math.round(semPIP/n*100)}%)\n`;
+  report += `  \u2022 Feedback ausente/parcial: ${semFeedback} (${Math.round(semFeedback/n*100)}%)\n`;
+  report += `  \u2022 Onboarding insuficiente: ${onbRuim} (${Math.round(onbRuim/n*100)}%)\n`;
+  report += `  \u2022 Ambiente disfuncional: ${ambienteRuim} (${Math.round(ambienteRuim/n*100)}%)\n`;
+  report += `  \u2022 Liderança nota \u2264 2: ${liderBaixa} (${Math.round(liderBaixa/n*100)}%)\n\n`;
+
+  report += '-'.repeat(40) + '\n';
+  report += '  MOTIVOS PRINCIPAIS\n';
+  report += '-'.repeat(40) + '\n';
+  topMotivos.forEach(([m, c]) => {
+    report += `  \u2022 ${m}: ${c} caso(s) (${Math.round(c/n*100)}%)\n`;
+  });
+
+  report += '\n' + '-'.repeat(40) + '\n';
+  report += '  DETALHAMENTO POR CASO\n';
+  report += '-'.repeat(40) + '\n';
+  data.forEach((r, i) => {
+    report += `\n  ${i+1}. ${r.gestor || 'Anônimo'} — ${r.time || '—'} (${r.periodo || '—'})\n`;
+    report += `     Risco: ${(r.risk||'').toUpperCase()} (score ${r.score || 0})\n`;
+    report += `     Motivo: ${r.motivo || '—'}\n`;
+    report += `     Feedback: ${r.feedback || '—'}\n`;
+    report += `     PIP: ${r.pip || '—'}\n`;
+    report += `     Onboarding: ${r.onboarding || '—'}\n`;
+    report += `     Liderança: ${r.lideranca || '—'}/5\n`;
+    if (r.obs) report += `     Obs: ${r.obs}\n`;
+  });
+
+  report += '\n' + '-'.repeat(40) + '\n';
+  report += '  RECOMENDAÇÕES PRINCIPAIS\n';
+  report += '-'.repeat(40) + '\n';
+  if (semPIP > 0) report += '  1. Implementar PIP formal obrigatório antes de desligamentos por performance\n';
+  if (semFeedback > 0) report += '  2. Criar cadencia de feedback contínuo com documentação\n';
+  if (onbRuim > 0) report += '  3. Redesenhar programa de onboarding com trilha de 90 dias\n';
+  if (liderBaixa > 0) report += '  4. Investir em capacitação de lideranças com nota baixa\n';
+  if (ambienteRuim > 0) report += '  5. Tratar ambientes disfuncionais como prioridade\n';
+  report += '  \u2022 Realizar retro trimestral com base neste relatório\n';
+
+  report += '\n' + '='.repeat(60) + '\n';
+  report += '  Gerado por: Análise de Desligamentos Dashboard\n';
+  report += '='.repeat(60) + '\n';
+
+  const blob = new Blob([report], { type: 'text/plain;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'relatorio-executivo-desligamentos-' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📄 Relatório executivo exportado!', 'info');
+}
+
 // ——— MOCK DATA SEED ———
 const MOCK_SEED = [
   {
@@ -1170,12 +1576,16 @@ function closeMobile() {
 // ——— NAV ———
 function showPage(id) {
   closeMobile();
+  // Auth check for dashboard
+  if (id === 'dashboard' && !isLoggedIn()) {
+    id = 'login';
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  const tabs = { home: 0, form: 1, dashboard: 2 };
+  const tabs = { home: 0, form: 1, dashboard: 2, login: 2 };
   document.querySelectorAll('.nav-tab')[tabs[id]]?.classList.add('active');
-  if (id === 'dashboard') renderDashboard();
+  if (id === 'dashboard') { updateAuthUI(); renderDashboard(); }
   if (id === 'home') updateHomeStats();
   window.scrollTo(0, 0);
 }
@@ -1527,6 +1937,7 @@ function renderDashboard() {
   renderSuggestions(data);
   renderTable(data);
   renderAdminPeople();
+  renderUserManagement();
 }
 
 function renderKPIs(data) {
@@ -1782,7 +2193,9 @@ function renderTable(data) {
     if (o.includes('Parcial')) return 'Parcial';
     return 'Não';
   };
-  document.getElementById('resp-tbody').innerHTML = data.map((r, i) => `
+  document.getElementById('resp-tbody').innerHTML = data.map((r, i) => {
+    const deleteBtn = isAdmin() ? `<td><button class="btn-delete-row" onclick="deleteResponse(${r.id})" title="Excluir resposta">✕</button></td>` : '<td></td>';
+    return `
     <tr>
       <td style="color:var(--muted)">${i+1}</td>
       <td>${escapeHtml(r.gestor)}</td>
@@ -1791,9 +2204,10 @@ function renderTable(data) {
       <td>${motivoShort(r.motivo)}</td>
       <td>${onbShort(r.onboarding)}</td>
       <td><span class="risk-pill ${riskMap[r.risk]}">${riskLabelMap[r.risk]}</span></td>
-      <td><button class="btn-delete-row" onclick="deleteResponse(${r.id})" title="Excluir resposta">✕</button></td>
+      ${deleteBtn}
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 // ——— SUGESTÕES PREVENTIVAS ———
