@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 
 // ═══════════════════════════════════════════════════════════
 // TESTE E2E COMPLETO — Análise de Desligamentos
-// Fluxo: Home → Formulário (7 seções) → Submissão → Dashboard
+// Fluxo: Home → Formulário (9 seções) → Submissão → Dashboard
 // ═══════════════════════════════════════════════════════════
 
 // Helper: login as admin
@@ -44,6 +44,16 @@ const MOCK_CASES = [
     lideranca: 2,     // Nota 2
     perfil: 2,        // Erro no seletivo
     selecaoCultural: 2,  // Foco técnico
+    oneOnOne: 2,         // Não existiam
+    autonomia: 1,        // Microgerenciamento
+    segPsicologica: 2,   // Clima de medo
+    decisao: 2,          // Impulsiva
+    apoioDecisao: 2,     // Unilateral
+    retros: 2,           // Não havia
+    impedimentos: 2,     // Ignorados
+    participacaoRitos: 1,// Passivo
+    capacidade: 2,       // Sobrecarga
+    smAtuacao: 2,        // Não havia
     melhorias: [0, 1, 3, 5], // Contratação, Onboarding, Feedback, Liderança
     obs: 'Case crítico com múltiplas falhas sistêmicas.',
     expectedRisk: 'Alto'
@@ -67,6 +77,16 @@ const MOCK_CASES = [
     lideranca: 4,     // Nota 4
     perfil: 1,        // Parcialmente alinhado
     selecaoCultural: 1,  // Intuição
+    oneOnOne: 0,         // Semanais com registro
+    autonomia: 0,        // Autonomia compatível
+    segPsicologica: 0,   // Ambiente aberto
+    decisao: 0,          // Baseada em dados
+    apoioDecisao: 0,     // Envolveu RH/SM
+    retros: 0,           // Frequentes com ações
+    impedimentos: 0,     // Removidos rapidamente
+    participacaoRitos: 0,// Engajado
+    capacidade: 0,       // Respeitava capacidade
+    smAtuacao: 0,        // Atuação ativa
     melhorias: [6],   // Cultura
     obs: '',
     expectedRisk: 'Baixo'
@@ -90,6 +110,16 @@ const MOCK_CASES = [
     lideranca: 3,     // Nota 3
     perfil: 0,        // Perfil correto
     selecaoCultural: 1,  // Intuição
+    oneOnOne: 1,         // Eventualmente
+    autonomia: 0,        // Autonomia compatível
+    segPsicologica: 1,   // Parcial
+    decisao: 0,          // Baseada em dados
+    apoioDecisao: 1,     // Consultou superficialmente
+    retros: 1,           // Superficiais
+    impedimentos: 1,     // Parcialmente
+    participacaoRitos: 0,// Engajado
+    capacidade: 0,       // Respeitava capacidade
+    smAtuacao: 1,        // Foco em processos
     melhorias: [2, 3, 4, 6], // Expectativas, Feedback, Performance, Cultura
     obs: 'Caso intermediário com pontos de atenção no acompanhamento.',
     expectedRisk: 'Medio'
@@ -260,7 +290,47 @@ test.describe('Formulário — Preenchimento e Submissão', () => {
       await expect(page.locator('#sec-7')).toBeVisible();
       console.log(`  📝 Caso ${caseIdx + 1} — Seção 6 (Time + Escala + Seleção) OK`);
 
-      // ——— SEÇÃO 7: Aprendizados ———
+      // ——— SEÇÃO 7: Liderança e gestão ———
+      const oneOnOne = page.locator('#q-one-on-one .radio-card');
+      await oneOnOne.nth(mockCase.oneOnOne).click();
+
+      const autonomia = page.locator('#q-autonomia .radio-card');
+      await autonomia.nth(mockCase.autonomia).click();
+
+      const segPsico = page.locator('#q-seg-psicologica .radio-card');
+      await segPsico.nth(mockCase.segPsicologica).click();
+
+      const decisao = page.locator('#q-decisao .radio-card');
+      await decisao.nth(mockCase.decisao).click();
+
+      const apoioDecisao = page.locator('#q-apoio-decisao .radio-card');
+      await apoioDecisao.nth(mockCase.apoioDecisao).click();
+
+      await page.click('#sec-7 button:has-text("Próximo →")');
+      await expect(page.locator('#sec-8')).toBeVisible();
+      console.log(`  📝 Caso ${caseIdx + 1} — Seção 7 (Liderança e gestão) OK`);
+
+      // ——— SEÇÃO 8: Práticas ágeis ———
+      const retros = page.locator('#q-retros .radio-card');
+      await retros.nth(mockCase.retros).click();
+
+      const impedimentos = page.locator('#q-impedimentos .radio-card');
+      await impedimentos.nth(mockCase.impedimentos).click();
+
+      const participacaoRitos = page.locator('#q-participacao-ritos .radio-card');
+      await participacaoRitos.nth(mockCase.participacaoRitos).click();
+
+      const capacidade = page.locator('#q-capacidade .radio-card');
+      await capacidade.nth(mockCase.capacidade).click();
+
+      const smAtuacao = page.locator('#q-sm-atuacao .radio-card');
+      await smAtuacao.nth(mockCase.smAtuacao).click();
+
+      await page.click('#sec-8 button:has-text("Próximo →")');
+      await expect(page.locator('#sec-9')).toBeVisible();
+      console.log(`  📝 Caso ${caseIdx + 1} — Seção 8 (Práticas ágeis) OK`);
+
+      // ——— SEÇÃO 9: Aprendizados ———
       const melhorias = page.locator('#q-melhorias .check-card');
       for (const idx of mockCase.melhorias) {
         await melhorias.nth(idx).click();
@@ -272,7 +342,7 @@ test.describe('Formulário — Preenchimento e Submissão', () => {
 
       // SUBMETER
       await page.click('button:has-text("Enviar resposta")');
-      console.log(`  📝 Caso ${caseIdx + 1} — Seção 7 (Aprendizados) + Submit OK`);
+      console.log(`  📝 Caso ${caseIdx + 1} — Seção 9 (Aprendizados) + Submit OK`);
 
       // ——— VERIFICAR SUCESSO ———
       await expect(page.locator('.success-screen h2')).toHaveText('Resposta registrada!');

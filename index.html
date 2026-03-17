@@ -962,8 +962,110 @@
       </div>
     </div>
 
-    <!-- SECTION 7: APRENDIZADOS -->
+    <!-- SECTION 7: LIDERANÇA E GESTÃO -->
     <div class="form-section" id="sec-7">
+      <div class="section-title">Liderança e gestão</div>
+      <div class="section-subtitle">Como era a relação do líder com o profissional e como as decisões foram tomadas?</div>
+      <div class="field">
+        <label class="field-label">Existiam 1:1s (one-on-ones) com o líder direto? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-one-on-one">
+          <div class="radio-card" onclick="pickRadio(this,'q-one-on-one')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, semanais ou quinzenais com registro</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-one-on-one')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Eventualmente, sem frequência definida</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-one-on-one')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não existiam 1:1s</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O profissional tinha autonomia adequada para seu nível? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-autonomia">
+          <div class="radio-card" onclick="pickRadio(this,'q-autonomia')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — autonomia compatível com maturidade</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-autonomia')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Pouca — microgerenciamento excessivo</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-autonomia')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Excessiva — largado sem direção ou suporte</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Havia segurança psicológica no time para levantar problemas? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-seg-psicologica">
+          <div class="radio-card" onclick="pickRadio(this,'q-seg-psicologica')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — ambiente aberto para vulnerabilidade e erro</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-seg-psicologica')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcial — algumas pessoas se sentiam à vontade, outras não</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-seg-psicologica')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — clima de medo ou julgamento</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Como a decisão de desligamento foi tomada? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-decisao">
+          <div class="radio-card" onclick="pickRadio(this,'q-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Baseada em dados, com histórico documentado</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Baseada em percepção, sem evidências claras</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Decisão impulsiva ou reativa a um evento específico</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O líder buscou apoio (RH, pares, SM/AM) antes de decidir? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-apoio-decisao">
+          <div class="radio-card" onclick="pickRadio(this,'q-apoio-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — envolveu RH, pares ou Scrum Master</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-apoio-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — consultou superficialmente</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-apoio-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — decisão unilateral do gestor</div>
+        </div>
+      </div>
+      <div class="validation-msg" id="val-7">⚠ Selecione uma opção em cada pergunta obrigatória.</div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(6)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(8)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 8: PRÁTICAS ÁGEIS -->
+    <div class="form-section" id="sec-8">
+      <div class="section-title">Práticas ágeis e ritos</div>
+      <div class="section-subtitle">Os ritos e práticas ágeis funcionaram como rede de proteção?</div>
+      <div class="field">
+        <label class="field-label">As retrospectivas do time surfaceavam problemas reais? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-retros">
+          <div class="radio-card" onclick="pickRadio(this,'q-retros')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — retros frequentes com ações concretas</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-retros')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Retros existiam mas eram superficiais</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-retros')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não havia retrospectivas ou eram raras</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Os impedimentos do profissional eram tratados pelo time/líder? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-impedimentos">
+          <div class="radio-card" onclick="pickRadio(this,'q-impedimentos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — impedimentos removidos rapidamente</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-impedimentos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — alguns ficavam tempo demais sem resolução</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-impedimentos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — impedimentos eram ignorados ou normalizados</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">O profissional participava ativamente dos ritos ágeis? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-participacao-ritos">
+          <div class="radio-card" onclick="pickRadio(this,'q-participacao-ritos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — engajado em dailies, plannings, retros</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-participacao-ritos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — presente mas passivo</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-participacao-ritos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — ausência frequente ou resistência</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">A velocidade/capacidade do time era respeitada na priorização? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-capacidade">
+          <div class="radio-card" onclick="pickRadio(this,'q-capacidade')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — planejamento respeitava a capacidade</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-capacidade')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — pressão eventual por scope creep</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-capacidade')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não — sobrecarga constante e metas irreais</div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Existia um Scrum Master ou Agile Master atuando no time? <span class="req">*</span></label>
+        <div class="radio-grid" id="q-sm-atuacao">
+          <div class="radio-card" onclick="pickRadio(this,'q-sm-atuacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — com atuação ativa em coaching e facilitação</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-sm-atuacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — mas com foco apenas em processos/cerimoniais</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-sm-atuacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Não havia SM/AM ou não atuava neste time</div>
+        </div>
+      </div>
+      <div class="validation-msg" id="val-8">⚠ Selecione uma opção em cada pergunta obrigatória.</div>
+      <div class="form-nav">
+        <button class="btn-form-back" onclick="goSection(7)">← Voltar</button>
+        <button class="btn-form-next" onclick="goSection(9)">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- SECTION 9: APRENDIZADOS -->
+    <div class="form-section" id="sec-9">
       <div class="section-title">Aprendizados e prioridades</div>
       <div class="section-subtitle">O que este caso nos ensina sobre o sistema?</div>
       <div class="field">
@@ -976,6 +1078,9 @@
           <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Acompanhamento de performance</div>
           <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Liderança e gestão do time</div>
           <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Cultura organizacional</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Práticas ágeis e ritos do time</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Segurança psicológica e confiança</div>
+          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Processo de tomada de decisão</div>
         </div>
       </div>
       <div class="field">
@@ -983,7 +1088,7 @@
         <textarea class="text-input" id="q-obs" placeholder="Qualquer contexto adicional relevante..."></textarea>
       </div>
       <div class="form-nav">
-        <button class="btn-form-back" onclick="goSection(6)">← Voltar</button>
+        <button class="btn-form-back" onclick="goSection(8)">← Voltar</button>
         <button class="btn-form-next" onclick="submitForm()" style="background:#6dd84a;color:#0a1628;">Enviar resposta ✓</button>
       </div>
     </div>
@@ -1412,6 +1517,11 @@ function exportExecutiveReport() {
   const onbRuim = data.filter(r => r.onboarding && (r.onboarding.includes('sem estrutura') || r.onboarding.includes('Parcial'))).length;
   const ambienteRuim = data.filter(r => r.ambiente && r.ambiente.includes('Dificultava')).length;
   const liderBaixa = data.filter(r => (r.lideranca||3) <= 2).length;
+  const semOneOne = data.filter(r => r.oneOnOne && (r.oneOnOne.includes('Não existiam') || r.oneOnOne.includes('Eventualmente'))).length;
+  const segPsicoRuim = data.filter(r => r.segPsicologica && (r.segPsicologica.includes('medo') || r.segPsicologica.includes('Parcial'))).length;
+  const decisaoRuim = data.filter(r => r.decisao && (r.decisao.includes('impulsiva') || r.decisao.includes('percepção'))).length;
+  const retrosRuins = data.filter(r => r.retros && (r.retros.includes('Não havia') || r.retros.includes('superficiais'))).length;
+  const sobrecarga = data.filter(r => r.capacidade && r.capacidade.includes('sobrecarga')).length;
 
   // Motivos
   const motivoCount = {};
@@ -1454,7 +1564,12 @@ function exportExecutiveReport() {
   report += `  \u2022 Feedback ausente/parcial: ${semFeedback} (${Math.round(semFeedback/n*100)}%)\n`;
   report += `  \u2022 Onboarding insuficiente: ${onbRuim} (${Math.round(onbRuim/n*100)}%)\n`;
   report += `  \u2022 Ambiente disfuncional: ${ambienteRuim} (${Math.round(ambienteRuim/n*100)}%)\n`;
-  report += `  \u2022 Liderança nota \u2264 2: ${liderBaixa} (${Math.round(liderBaixa/n*100)}%)\n\n`;
+  report += `  \u2022 Liderança nota \u2264 2: ${liderBaixa} (${Math.round(liderBaixa/n*100)}%)\n`;
+  report += `  \u2022 Sem 1:1s regulares: ${semOneOne} (${Math.round(semOneOne/n*100)}%)\n`;
+  report += `  \u2022 Seg. psicológica baixa: ${segPsicoRuim} (${Math.round(segPsicoRuim/n*100)}%)\n`;
+  report += `  \u2022 Decisão sem dados: ${decisaoRuim} (${Math.round(decisaoRuim/n*100)}%)\n`;
+  report += `  \u2022 Retros ausentes/fracas: ${retrosRuins} (${Math.round(retrosRuins/n*100)}%)\n`;
+  report += `  \u2022 Sobrecarga no time: ${sobrecarga} (${Math.round(sobrecarga/n*100)}%)\n\n`;
 
   report += '-'.repeat(40) + '\n';
   report += '  MOTIVOS PRINCIPAIS\n';
@@ -1474,6 +1589,10 @@ function exportExecutiveReport() {
     report += `     PIP: ${r.pip || '—'}\n`;
     report += `     Onboarding: ${r.onboarding || '—'}\n`;
     report += `     Liderança: ${r.lideranca || '—'}/5\n`;
+    if (r.oneOnOne) report += `     1:1s: ${r.oneOnOne}\n`;
+    if (r.segPsicologica) report += `     Seg. psicológica: ${r.segPsicologica}\n`;
+    if (r.decisao) report += `     Decisão: ${r.decisao}\n`;
+    if (r.retros) report += `     Retros: ${r.retros}\n`;
     if (r.obs) report += `     Obs: ${r.obs}\n`;
   });
 
@@ -1485,6 +1604,11 @@ function exportExecutiveReport() {
   if (onbRuim > 0) report += '  3. Redesenhar programa de onboarding com trilha de 90 dias\n';
   if (liderBaixa > 0) report += '  4. Investir em capacitação de lideranças com nota baixa\n';
   if (ambienteRuim > 0) report += '  5. Tratar ambientes disfuncionais como prioridade\n';
+  if (semOneOne > 0) report += '  6. Implementar cadência obrigatória de 1:1s entre líder e liderado\n';
+  if (segPsicoRuim > 0) report += '  7. Desenvolver segurança psicológica nos times\n';
+  if (decisaoRuim > 0) report += '  8. Basear decisões de desligamento em dados e histórico documentado\n';
+  if (retrosRuins > 0) report += '  9. Fortalecer retrospectivas como rede de proteção do time\n';
+  if (sobrecarga > 0) report += '  10. Respeitar capacidade do time e eliminar sobrecarga crônica\n';
   report += '  \u2022 Realizar retro trimestral com base neste relatório\n';
 
   report += '\n' + '='.repeat(60) + '\n';
@@ -1520,7 +1644,16 @@ const MOCK_SEED = [
     selecaoCultural: 'Não — foco apenas técnico',
     melhorias: ['Processo de contratação / critérios de seleção','Onboarding e integração','Comunicação e feedback contínuo','Liderança e gestão do time'],
     obs: 'Case crítico com múltiplas falhas sistêmicas.',
-    ts: '15/01/2026', score: 23, risk: 'alto'
+    oneOnOne: 'Não existiam 1:1s', autonomia: 'Pouca — microgerenciamento excessivo',
+    segPsicologica: 'Não — clima de medo ou julgamento',
+    decisao: 'Decisão impulsiva ou reativa a um evento específico',
+    apoioDecisao: 'Não — decisão unilateral do gestor',
+    retros: 'Não havia retrospectivas ou eram raras',
+    impedimentos: 'Não — impedimentos eram ignorados ou normalizados',
+    participacaoRitos: 'Parcialmente — presente mas passivo',
+    capacidade: 'Não — sobrecarga constante e metas irreais',
+    smAtuacao: 'Não havia SM/AM ou não atuava neste time',
+    ts: '15/01/2026', score: 38, risk: 'alto'
   },
   {
     id: 1002, gestor: 'Carlos Eduardo', time: 'Engenharia Backend', periodo: 'Fevereiro 2026',
@@ -1539,6 +1672,15 @@ const MOCK_SEED = [
     selecaoCultural: 'Parcialmente — só intuição do entrevistador',
     melhorias: ['Cultura organizacional'],
     obs: '',
+    oneOnOne: 'Sim, semanais ou quinzenais com registro', autonomia: 'Sim — autonomia compatível com maturidade',
+    segPsicologica: 'Sim — ambiente aberto para vulnerabilidade e erro',
+    decisao: 'Baseada em dados, com histórico documentado',
+    apoioDecisao: 'Sim — envolveu RH, pares ou Scrum Master',
+    retros: 'Sim — retros frequentes com ações concretas',
+    impedimentos: 'Sim — impedimentos removidos rapidamente',
+    participacaoRitos: 'Sim — engajado em dailies, plannings, retros',
+    capacidade: 'Sim — planejamento respeitava a capacidade',
+    smAtuacao: 'Sim — com atuação ativa em coaching e facilitação',
     ts: '10/02/2026', score: 1, risk: 'baixo'
   },
   {
@@ -1558,7 +1700,16 @@ const MOCK_SEED = [
     selecaoCultural: 'Parcialmente — só intuição do entrevistador',
     melhorias: ['Clareza de expectativas do cargo','Comunicação e feedback contínuo','Acompanhamento de performance','Cultura organizacional'],
     obs: 'Caso intermediário com pontos de atenção no acompanhamento.',
-    ts: '05/03/2026', score: 6, risk: 'medio'
+    oneOnOne: 'Eventualmente, sem frequência definida', autonomia: 'Sim — autonomia compatível com maturidade',
+    segPsicologica: 'Parcial — algumas pessoas se sentiam à vontade, outras não',
+    decisao: 'Baseada em percepção, sem evidências claras',
+    apoioDecisao: 'Parcialmente — consultou superficialmente',
+    retros: 'Retros existiam mas eram superficiais',
+    impedimentos: 'Parcialmente — alguns ficavam tempo demais sem resolução',
+    participacaoRitos: 'Sim — engajado em dailies, plannings, retros',
+    capacidade: 'Parcialmente — pressão eventual por scope creep',
+    smAtuacao: 'Sim — mas com foco apenas em processos/cerimoniais',
+    ts: '05/03/2026', score: 9, risk: 'medio'
   },
   {
     id: 1004, gestor: 'Ricardo Mendes', time: 'Comercial', periodo: 'Março 2026',
@@ -1577,7 +1728,16 @@ const MOCK_SEED = [
     selecaoCultural: 'Não — foco apenas técnico',
     melhorias: ['Processo de contratação / critérios de seleção','Clareza de expectativas do cargo','Liderança e gestão do time','Cultura organizacional'],
     obs: 'Reestruturação foi necessária mas faltou planejamento.',
-    ts: '12/03/2026', score: 15, risk: 'alto'
+    oneOnOne: 'Não existiam 1:1s', autonomia: 'Excessiva — largado sem direção ou suporte',
+    segPsicologica: 'Não — clima de medo ou julgamento',
+    decisao: 'Baseada em percepção, sem evidências claras',
+    apoioDecisao: 'Não — decisão unilateral do gestor',
+    retros: 'Não havia retrospectivas ou eram raras',
+    impedimentos: 'Não — impedimentos eram ignorados ou normalizados',
+    participacaoRitos: 'Não — ausência frequente ou resistência',
+    capacidade: 'Não — sobrecarga constante e metas irreais',
+    smAtuacao: 'Não havia SM/AM ou não atuava neste time',
+    ts: '12/03/2026', score: 28, risk: 'alto'
   },
   {
     id: 1005, gestor: 'Juliana Costa', time: 'Design', periodo: 'Janeiro 2026',
@@ -1596,6 +1756,15 @@ const MOCK_SEED = [
     selecaoCultural: 'Sim, com avaliação cultural estruturada',
     melhorias: [],
     obs: 'Desligamento por mudança estratégica. Sem falhas sistêmicas.',
+    oneOnOne: 'Sim, semanais ou quinzenais com registro', autonomia: 'Sim — autonomia compatível com maturidade',
+    segPsicologica: 'Sim — ambiente aberto para vulnerabilidade e erro',
+    decisao: 'Baseada em dados, com histórico documentado',
+    apoioDecisao: 'Sim — envolveu RH, pares ou Scrum Master',
+    retros: 'Sim — retros frequentes com ações concretas',
+    impedimentos: 'Sim — impedimentos removidos rapidamente',
+    participacaoRitos: 'Sim — engajado em dailies, plannings, retros',
+    capacidade: 'Sim — planejamento respeitava a capacidade',
+    smAtuacao: 'Sim — com atuação ativa em coaching e facilitação',
     ts: '20/01/2026', score: 0, risk: 'baixo'
   }
 ];
@@ -1643,7 +1812,7 @@ function showPage(id) {
 }
 
 // ——— FORM SECTIONS ———
-const TOTAL = 7;
+const TOTAL = 9;
 function buildProgress() {
   const wrap = document.getElementById('progress-steps');
   wrap.innerHTML = '';
@@ -1676,7 +1845,9 @@ const VALIDATIONS = {
   4: () => getRadio('q-sinais') && getRadio('q-sinais-discussao'),
   5: () => getRadio('q-onboarding') && getRadio('q-buddy'),
   6: () => getRadio('q-ambiente') && scales['q-lideranca'] && getRadio('q-perfil') && getRadio('q-selecao-cultural'),
-  7: () => true
+  7: () => getRadio('q-one-on-one') && getRadio('q-autonomia') && getRadio('q-seg-psicologica') && getRadio('q-decisao') && getRadio('q-apoio-decisao'),
+  8: () => getRadio('q-retros') && getRadio('q-impedimentos') && getRadio('q-participacao-ritos') && getRadio('q-capacidade') && getRadio('q-sm-atuacao'),
+  9: () => true
 };
 
 function goSection(n) {
@@ -1742,6 +1913,22 @@ function calcScore(d) {
   if (d.selecaoCultural.includes('técnico')) s += 2;
   if (d.lideranca <= 2) s += 2;
   if (d.sinaisDiscussao.includes('Não')) s += 2;
+  // Liderança e gestão
+  if (d.oneOnOne && d.oneOnOne.includes('Não existiam')) s += 3;
+  else if (d.oneOnOne && d.oneOnOne.includes('Eventualmente')) s += 1;
+  if (d.autonomia && d.autonomia.includes('microgerenciamento')) s += 2;
+  else if (d.autonomia && d.autonomia.includes('largado')) s += 2;
+  if (d.segPsicologica && d.segPsicologica.includes('medo')) s += 3;
+  else if (d.segPsicologica && d.segPsicologica.includes('Parcial')) s += 1;
+  if (d.decisao && d.decisao.includes('impulsiva')) s += 3;
+  else if (d.decisao && d.decisao.includes('percepção')) s += 1;
+  if (d.apoioDecisao && d.apoioDecisao.includes('unilateral')) s += 2;
+  // Práticas ágeis
+  if (d.retros && d.retros.includes('Não havia')) s += 2;
+  else if (d.retros && d.retros.includes('superficiais')) s += 1;
+  if (d.impedimentos && d.impedimentos.includes('ignorados')) s += 2;
+  if (d.capacidade && d.capacidade.includes('sobrecarga')) s += 2;
+  if (d.smAtuacao && d.smAtuacao.includes('Não havia')) s += 1;
   return s;
 }
 function riskLevel(score) {
@@ -1775,6 +1962,16 @@ function submitForm() {
     lideranca: scales['q-lideranca'] || 3,
     perfil: getRadio('q-perfil'),
     selecaoCultural: getRadio('q-selecao-cultural'),
+    oneOnOne: getRadio('q-one-on-one'),
+    autonomia: getRadio('q-autonomia'),
+    segPsicologica: getRadio('q-seg-psicologica'),
+    decisao: getRadio('q-decisao'),
+    apoioDecisao: getRadio('q-apoio-decisao'),
+    retros: getRadio('q-retros'),
+    impedimentos: getRadio('q-impedimentos'),
+    participacaoRitos: getRadio('q-participacao-ritos'),
+    capacidade: getRadio('q-capacidade'),
+    smAtuacao: getRadio('q-sm-atuacao'),
     melhorias: getChecks('q-melhorias'),
     obs: document.getElementById('q-obs').value,
     ts: new Date().toLocaleDateString('pt-BR')
@@ -2130,6 +2327,15 @@ function renderActions(data) {
   const score_expectativas = data.filter(r => r.expectativas && (r.expectativas.includes('Não') || r.expectativas.includes('Parcial'))).length;
   const score_ambiente = data.filter(r => r.ambiente && r.ambiente.includes('Dificultava')).length;
   const score_sinais = data.filter(r => r.sinaisDiscussao && r.sinaisDiscussao.includes('Não')).length;
+  const score_oneone = data.filter(r => r.oneOnOne && (r.oneOnOne.includes('Não existiam') || r.oneOnOne.includes('Eventualmente'))).length;
+  const score_autonomia = data.filter(r => r.autonomia && (r.autonomia.includes('microgerenciamento') || r.autonomia.includes('largado'))).length;
+  const score_segpsico = data.filter(r => r.segPsicologica && (r.segPsicologica.includes('medo') || r.segPsicologica.includes('Parcial'))).length;
+  const score_decisao = data.filter(r => r.decisao && (r.decisao.includes('impulsiva') || r.decisao.includes('percepção'))).length;
+  const score_apoio = data.filter(r => r.apoioDecisao && (r.apoioDecisao.includes('unilateral') || r.apoioDecisao.includes('superficialmente'))).length;
+  const score_retros = data.filter(r => r.retros && (r.retros.includes('Não havia') || r.retros.includes('superficiais'))).length;
+  const score_impedimentos = data.filter(r => r.impedimentos && r.impedimentos.includes('ignorados')).length;
+  const score_capacidade = data.filter(r => r.capacidade && r.capacidade.includes('sobrecarga')).length;
+  const score_sm = data.filter(r => r.smAtuacao && (r.smAtuacao.includes('Não havia') || r.smAtuacao.includes('processos'))).length;
 
   const actions = [];
 
@@ -2194,6 +2400,69 @@ function renderActions(data) {
     title: 'Investir em capacitação das lideranças avaliadas negativamente',
     desc: `Gestores com nota 1–3 devem ter plano de desenvolvimento em gestão de pessoas: feedback, 1:1s, reconhecimento e ambiente seguro.`,
     area: 'Liderança'
+  });
+
+  if (score_oneone > 0) actions.push({
+    p: 'imediata', count: score_oneone, n,
+    title: 'Implementar cadência obrigatória de 1:1s entre líder e liderado',
+    desc: `Sem 1:1s, sinais de desmotivação e performance passam despercebidos. Criar cadência semanal ou quinzenal com pauta estruturada e registro.`,
+    area: 'Gestão de pessoas'
+  });
+
+  if (score_autonomia > 0) actions.push({
+    p: 'curto', count: score_autonomia, n,
+    title: 'Calibrar nível de autonomia de acordo com maturidade',
+    desc: `Microgerenciamento e abandono são dois extremos prejudiciais. Usar modelo de delegação situacional (Direção → Coaching → Apoio → Delegação) conforme maturidade do profissional.`,
+    area: 'Liderança'
+  });
+
+  if (score_segpsico > 0) actions.push({
+    p: 'imediata', count: score_segpsico, n,
+    title: 'Desenvolver segurança psicológica nos times',
+    desc: `Times sem segurança psicológica escondem problemas até ser tarde demais. Capacitar líderes em escuta ativa, normalizar o erro como aprendizado e realizar health checks regulares.`,
+    area: 'Cultura e ambiente'
+  });
+
+  if (score_decisao > 0) actions.push({
+    p: 'imediata', count: score_decisao, n,
+    title: 'Melhorar processo de tomada de decisão de desligamento',
+    desc: `Decisões impulsivas ou baseadas apenas em percepção indicam falta de dados. Criar checklist pré-desligamento com evidências documentadas, histórico de feedbacks e PIPs.`,
+    area: 'Governança'
+  });
+
+  if (score_apoio > 0) actions.push({
+    p: 'curto', count: score_apoio, n,
+    title: 'Garantir que desligamentos passem por validação colaborativa',
+    desc: `Decisões unilaterais têm maior risco de erro. Incluir RH, Scrum Master ou pares na avaliação antes da decisão final. Criar comitê de avaliação para casos de risco.`,
+    area: 'Governança'
+  });
+
+  if (score_retros > 0) actions.push({
+    p: 'curto', count: score_retros, n,
+    title: 'Fortalecer retrospectivas como rede de proteção do time',
+    desc: `Retros ausentes ou superficiais deixam problemas acumularem. Variar formatos, usar facilitação neutra, e garantir que ações sejam acompanhadas na sprint seguinte.`,
+    area: 'Práticas ágeis'
+  });
+
+  if (score_impedimentos > 0) actions.push({
+    p: 'imediata', count: score_impedimentos, n,
+    title: 'Criar processo de remoção ativa de impedimentos',
+    desc: `Impedimentos ignorados desmotivam e reduzem performance. SM/AM deve ter board de impedimentos visível, com SLA de resolução e escalação para liderança quando necessário.`,
+    area: 'Práticas ágeis'
+  });
+
+  if (score_capacidade > 0) actions.push({
+    p: 'imediata', count: score_capacidade, n,
+    title: 'Respeitar capacidade do time na priorização de demandas',
+    desc: `Sobrecarga constante gera burnout e turnover. Utilizar velocity real como base de planejamento, proteger o time de scope creep e negociar trade-offs com stakeholders.`,
+    area: 'Gestão de produto'
+  });
+
+  if (score_sm > 0) actions.push({
+    p: 'medio', count: score_sm, n,
+    title: 'Fortalecer atuação do Scrum Master / Agile Master no time',
+    desc: `SM/AM focado só em processos perde sua função principal: coaching do time e remoção de impedimentos organizacionais. Investir em SM/AM com atuação em dinâmica de time e liderança.`,
+    area: 'Agilidade'
   });
 
   actions.push({
@@ -2332,6 +2601,64 @@ function renderSuggestions(data) {
     icon: '🧭', cat: 'Fit cultural',
     title: 'Avaliar fit cultural com estrutura, não intuição',
     desc: `${selecaoRuim} contratação(ões) não avaliaram adequadamente aspectos culturais. Sugestão: documentar os valores da empresa em comportamentos observáveis. Criar guia de entrevista cultural com exemplos de respostas boas e ruins. A decisão de contratação deve incluir pelo menos 1 par do time futuro.`
+  });
+
+  // Novas sugestões: Liderança e Gestão
+  const semOneOnOne = data.filter(r => r.oneOnOne && (r.oneOnOne.includes('Não existiam') || r.oneOnOne.includes('Eventualmente'))).length;
+  if (semOneOnOne > 0) suggestions.push({
+    icon: '🔄', cat: '1:1s',
+    title: 'Instituir 1:1s como prática obrigatória de liderança',
+    desc: `${semOneOnOne} caso(s) não tinham 1:1s regulares. Sugestão: 1:1 semanal ou quinzenal com pauta fixa — "Como você está?", "O que te bloqueia?", "Que apoio precisa?". Registrar e acompanhar ações. Líderes sem 1:1s perdem visibilidade de sinais precoces.`
+  });
+
+  const faltaSegPsico = data.filter(r => r.segPsicologica && (r.segPsicologica.includes('medo') || r.segPsicologica.includes('Parcial'))).length;
+  if (faltaSegPsico > 0) suggestions.push({
+    icon: '🛡️', cat: 'Segurança psicológica',
+    title: 'Criar ambiente seguro para vulnerabilidade e erro',
+    desc: `${faltaSegPsico} caso(s) indicaram falta de segurança psicológica. Sugestão: líder deve modelar vulnerabilidade ("eu errei em..."), normalizar perguntas e criar rituais de reconhecimento. Usar retrospectivas para surfacear tensões. Times inseguros escondem problemas até explodirem.`
+  });
+
+  const decisaoRuim = data.filter(r => r.decisao && (r.decisao.includes('impulsiva') || r.decisao.includes('percepção'))).length;
+  if (decisaoRuim > 0) suggestions.push({
+    icon: '⚖️', cat: 'Tomada de decisão',
+    title: 'Basear desligamentos em dados, não em percepção',
+    desc: `${decisaoRuim} desligamento(s) foram baseados em percepção ou impulso. Sugestão: criar checklist de evidências pré-desligamento (feedbacks documentados, PIP, métricas). Nenhum desligamento por performance deve acontecer sem pelo menos 90 dias de registro. Decisão deve ser validada por 2+ pessoas.`
+  });
+
+  const semApoio = data.filter(r => r.apoioDecisao && r.apoioDecisao.includes('unilateral')).length;
+  if (semApoio > 0) suggestions.push({
+    icon: '🤲', cat: 'Governança',
+    title: 'Evitar decisões unilaterais de desligamento',
+    desc: `${semApoio} caso(s) tiveram decisão unilateral do gestor. Sugestão: criar comitê de validação (gestor + RH + SM/AM ou par) para todo desligamento. Isso reduz viés, protege as pessoas e garante que alternativas foram consideradas antes da decisão final.`
+  });
+
+  // Novas sugestões: Práticas Ágeis
+  const retrosRuins = data.filter(r => r.retros && (r.retros.includes('Não havia') || r.retros.includes('superficiais'))).length;
+  if (retrosRuins > 0) suggestions.push({
+    icon: '🔁', cat: 'Retrospectivas',
+    title: 'Transformar retros em ferramenta real de melhoria contínua',
+    desc: `${retrosRuins} caso(s) tinham retros ausentes ou superficiais. Sugestão: variar formatos (4Ls, Starfish, Mad/Sad/Glad), usar facilitação neutra (SM/AM), limitar a 60min, e acompanhar ações na próxima sprint. Retros bem feitas são a maior rede de proteção contra problemas acumulados.`
+  });
+
+  const impedIgnorados = data.filter(r => r.impedimentos && r.impedimentos.includes('ignorados')).length;
+  if (impedIgnorados > 0) suggestions.push({
+    icon: '🚧', cat: 'Impedimentos',
+    title: 'Tratar remoção de impedimentos como responsabilidade organizacional',
+    desc: `${impedIgnorados} caso(s) tinham impedimentos ignorados ou normalizados. Sugestão: SM/AM deve manter board visível de impedimentos, com owner e SLA. Impedimentos > 1 semana devem ser escalados. Impedimentos não resolvidos afetam moral e performance do time inteiro.`
+  });
+
+  const sobrecarga = data.filter(r => r.capacidade && r.capacidade.includes('sobrecarga')).length;
+  if (sobrecarga > 0) suggestions.push({
+    icon: '📉', cat: 'Capacidade',
+    title: 'Parar de sobrecarregar times com metas irreais',
+    desc: `${sobrecarga} caso(s) relataram sobrecarga constante. Sugestão: usar velocity real (não desejada) como base de planejamento. Proteger a sprint de interrupções. Negociar trade-offs com PO/stakeholders. Scope creep sistemático é anti-pattern que o SM/AM deve endereçar ativamente.`
+  });
+
+  const smFraco = data.filter(r => r.smAtuacao && (r.smAtuacao.includes('Não havia') || r.smAtuacao.includes('processos'))).length;
+  if (smFraco > 0) suggestions.push({
+    icon: '🏋️', cat: 'SM/AM',
+    title: 'Investir em Scrum Masters / Agile Masters com atuação completa',
+    desc: `${smFraco} caso(s) indicam SM/AM ausente ou com atuação limitada a processos. Sugestão: SM/AM deve atuar em 3 pilares — coaching do time (dinâmica, colaboração), coaching do líder (servant leadership) e melhoria organizacional (impedimentos sistêmicos). Facilitar ritos é só a ponta do iceberg.`
   });
 
   // Sugestão geral sempre presente
