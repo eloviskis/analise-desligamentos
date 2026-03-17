@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Database
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-app.use(cors({ origin: ['https://eloviskis.github.io', 'http://187.77.55.172:3080', 'http://localhost:3333'], credentials: true }));
+app.use(cors({ origin: ['https://eloviskis.github.io', 'https://dsmetrics.online', 'http://187.77.55.172:3080', 'http://localhost:3333'], credentials: true }));
 app.use(express.json({ limit: '5mb' }));
 
 // ——— AUTH MIDDLEWARE ———
