@@ -1143,6 +1143,7 @@
         <p>Análise consolidada de todas as respostas coletadas</p>
       </div>
       <div class="dash-actions" id="dash-actions-bar" style="display:none;">
+        <button class="btn-small admin-only" onclick="shareFormLink()" title="Copiar link do formulário para enviar aos gestores">🔗 Compartilhar formulário</button>
         <button class="btn-small admin-only" onclick="exportCSV()" title="Exportar dados como CSV">📥 Exportar CSV</button>
         <button class="btn-small admin-only" onclick="exportJSON()" title="Exportar dados como JSON">💾 Exportar JSON</button>
         <button class="btn-small admin-only" onclick="exportExecutiveReport()" title="Gerar relatório executivo">📄 Relatório Executivo</button>
@@ -1158,6 +1159,7 @@
       <p>Preencha o formulário para ver os dados aqui.</p>
       <div style="margin-top:1.5rem;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
         <button class="btn-primary" onclick="showPage('form')">Preencher formulário →</button>
+        <button class="btn-small admin-only" onclick="shareFormLink()" title="Copiar link do formulário">🔗 Compartilhar formulário</button>
         <button class="btn-small" onclick="document.getElementById('import-json').click()">📤 Importar JSON</button>
       </div>
     </div>
@@ -2162,6 +2164,27 @@ function updateHomeStats() {
 }
 updateHomeStats();
 populateFuncionarioCombo();
+
+// ——— DEEP LINK: abrir direto no formulário via ?page=form ———
+(function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('page') === 'form') {
+    showPage('form');
+  }
+})();
+
+function shareFormLink() {
+  const url = window.location.origin + window.location.pathname + '?page=form';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('🔗 Link copiado! Envie para os gestores.', 'info');
+    }).catch(() => {
+      prompt('Copie o link abaixo:', url);
+    });
+  } else {
+    prompt('Copie o link abaixo:', url);
+  }
+}
 
 // ——— EXPORT CSV ———
 function exportCSV() {
