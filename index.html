@@ -1124,7 +1124,6 @@
         <input type="password" class="text-input" id="login-pass" placeholder="sua senha" autocomplete="current-password">
       </div>
       <button class="login-btn" onclick="doLogin()">Entrar</button>
-      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:1.5rem;">Admin padrão: admin / admin123</p>
     </div>
   </div>
 </div>
@@ -1467,7 +1466,7 @@ function promptChangePassword(username) {
   if (!isAdmin()) return;
   const overlay = document.getElementById('confirm-overlay');
   const title = document.getElementById('confirm-title');
-  const desc = document.getElementById('confirm-desc');
+  const desc = document.getElementById('confirm-msg');
   const actionBtn = document.getElementById('confirm-action');
   title.textContent = 'Trocar senha de ' + username;
   desc.innerHTML = `
