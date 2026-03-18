@@ -67,6 +67,15 @@ app.post('/api/auth/change-password', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
+// Admin: reset any user's password
+app.put('/api/users/:id/password', authMiddleware, adminOnly, async (req, res) => {
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters' });
+  const hash = await bcrypt.hash(newPassword, 10);
+  await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, parseInt(req.params.id)]);
+  res.json({ ok: true });
+});
+
 // ——— USERS ———
 app.get('/api/users', authMiddleware, adminOnly, async (req, res) => {
   const { rows } = await pool.query('SELECT id, username, role, created_at FROM users ORDER BY id');

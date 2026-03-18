@@ -1628,7 +1628,16 @@ function promptChangePassword(username) {
       return;
     }
     try {
-      const res = await api('POST', '/auth/change-password', { currentPassword: newPass, newPassword: newPass });
+      // Find user ID by username from the list
+      let userId;
+      try {
+        const uRes = await api('GET', '/users');
+        const users = await uRes.json();
+        const target = users.find(u => u.username === username);
+        userId = target ? target.id : null;
+      } catch(e) {}
+      if (!userId) { showToast('⚠ Usuário não encontrado', 'danger'); return; }
+      const res = await api('PUT', '/users/' + userId + '/password', { newPassword: newPass });
       if (res.ok) {
         closeConfirm();
         actionBtn.onclick = null;
@@ -2358,6 +2367,7 @@ function destroyCharts() {
 function renderDashboard() {
   const data = filteredResponses();
   renderDesligadosList();
+  renderUserManagement();
   if (responses.length === 0) {
     document.getElementById('dash-empty').style.display = 'block';
     document.getElementById('dash-content').style.display = 'none';
@@ -2374,7 +2384,6 @@ function renderDashboard() {
   renderSuggestions(data);
   renderTable(data);
   renderAdminPeople();
-  renderUserManagement();
   renderCrossAnalysis(data);
 }
 
