@@ -1267,24 +1267,25 @@
         <div id="admin-people-list" class="admin-people-grid"></div>
       </div>
 
-      <!-- GESTÃO DE USUÁRIOS -->
-      <div class="chart-card admin-only" style="margin-top:0;" id="user-mgmt-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <div>
-            <div class="chart-title" style="margin-bottom:4px;">👥 Gestão de usuários</div>
-            <div class="chart-sub" style="margin-bottom:0;">Adicione pessoas autorizadas a visualizar o dashboard</div>
-          </div>
+    </div>
+
+    <!-- GESTÃO DE USUÁRIOS (sempre visível para admins) -->
+    <div class="chart-card admin-only" style="margin-top:0;" id="user-mgmt-section">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <div>
+          <div class="chart-title" style="margin-bottom:4px;">👥 Gestão de usuários</div>
+          <div class="chart-sub" style="margin-bottom:0;">Adicione pessoas autorizadas a visualizar o dashboard</div>
         </div>
-        <div id="user-mgmt-list" class="user-mgmt-grid"></div>
-        <div class="add-user-form" id="add-user-form">
-          <input type="text" id="new-user-name" placeholder="Usuário" style="flex:1;min-width:120px;">
-          <input type="password" id="new-user-pass" placeholder="Senha" style="flex:1;min-width:120px;">
-          <select id="new-user-role">
-            <option value="viewer">Viewer</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button class="btn-add-user" onclick="addUser()">+ Adicionar</button>
-        </div>
+      </div>
+      <div id="user-mgmt-list" class="user-mgmt-grid"></div>
+      <div class="add-user-form" id="add-user-form">
+        <input type="text" id="new-user-name" placeholder="Usuário" style="flex:1;min-width:120px;">
+        <input type="password" id="new-user-pass" placeholder="Senha" style="flex:1;min-width:120px;">
+        <select id="new-user-role">
+          <option value="viewer">Viewer</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button class="btn-add-user" onclick="addUser()">+ Adicionar</button>
       </div>
     </div>
 
