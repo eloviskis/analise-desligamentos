@@ -216,10 +216,42 @@
   .field { margin-bottom: 1.5rem; }
   .field-label {
     display: block; font-size: 14px; font-weight: 500;
-    color: var(--text); margin-bottom: 10px;
+    color: var(--text); margin-bottom: 10px; position: relative;
   }
   .field-label span { color: var(--muted); font-weight: 400; }
   .field-label .req { color: var(--danger); font-weight: 600; margin-left: 2px; }
+  /* Info tooltip icon */
+  .info-tip {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: var(--bg); font-size: 11px;
+    font-weight: 700; cursor: pointer; margin-left: 6px;
+    vertical-align: middle; position: relative; user-select: none;
+    transition: background .2s, transform .2s; line-height: 1;
+    font-family: 'DM Sans', sans-serif; flex-shrink: 0;
+  }
+  .info-tip:hover { background: var(--accent2); transform: scale(1.15); }
+  .info-tip .tip-text {
+    display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%); width: 280px; padding: 10px 14px;
+    background: var(--card); border: 1px solid var(--accent);
+    border-radius: 10px; font-size: 12px; font-weight: 400;
+    color: var(--text); line-height: 1.5; z-index: 999;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4); pointer-events: none;
+    text-align: left;
+  }
+  .info-tip .tip-text::after {
+    content: ''; position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%); border: 6px solid transparent;
+    border-top-color: var(--accent);
+  }
+  .info-tip:hover .tip-text, .info-tip.active .tip-text { display: block; }
+  .info-tip .tip-title { color: var(--accent); font-weight: 600; margin-bottom: 4px; display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  .info-tip .tip-score { color: var(--muted); font-size: 11px; margin-top: 4px; display: block; font-style: italic; }
+  @media (max-width: 600px) {
+    .info-tip .tip-text { width: 220px; left: auto; right: -10px; transform: none; }
+    .info-tip .tip-text::after { left: auto; right: 14px; transform: none; }
+  }
   .text-input {
     width: 100%; padding: 11px 14px;
     background: var(--surface); border: 1px solid var(--border);
@@ -759,21 +791,21 @@
       <div class="section-title">Identificação</div>
       <div class="section-subtitle">Dados básicos para contextualização do caso.</div>
       <div class="field">
-        <label class="field-label">Seu nome (gestor que avalia) <span class="req">*</span></label>
+        <label class="field-label">Seu nome (gestor que avalia) <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Identifica quem está avaliando para cruzar dados entre gestores e detectar padrões recorrentes de um mesmo líder.<span class="tip-score">Influência: Não afeta o score diretamente, mas permite análise cruzada por gestor.</span></span></span></label>
         <input type="text" class="text-input" id="f-gestor" placeholder="Ex: Maria Fernanda">
       </div>
       <div class="field">
-        <label class="field-label">Profissional desligado <span class="req">*</span></label>
+        <label class="field-label">Profissional desligado <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Permite rastrear se um mesmo profissional foi avaliado por múltiplos gestores e identificar padrões individuais vs sistêmicos.<span class="tip-score">Influência: Não afeta o score, mas é essencial para a análise cruzada.</span></span></span></label>
         <select class="text-input" id="f-funcionario" style="cursor:pointer;">
           <option value="">Selecione o profissional...</option>
         </select>
       </div>
       <div class="field">
-        <label class="field-label">Time / área <span class="req">*</span></label>
+        <label class="field-label">Time / área <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Permite identificar times ou áreas com maior incidência de desligamentos, revelando problemas estruturais de equipe.<span class="tip-score">Influência: Não afeta o score, mas alimenta o gráfico de distribuição por time.</span></span></span></label>
         <input type="text" class="text-input" id="f-time" placeholder="Ex: Time Condado, Engenharia">
       </div>
       <div class="field">
-        <label class="field-label">Mês / período do desligamento <span class="req">*</span></label>
+        <label class="field-label">Mês / período do desligamento <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Permite análise temporal — identificar sazonalidade ou picos de desligamentos em determinados períodos.<span class="tip-score">Influência: Não afeta o score, mas é usado na análise de tendências.</span></span></span></label>
         <input type="text" class="text-input" id="f-periodo" placeholder="Ex: Janeiro 2025">
       </div>
       <div class="validation-msg" id="val-1">⚠ Preencha todos os campos obrigatórios para continuar.</div>
@@ -788,7 +820,7 @@
       <div class="section-title">Contexto do desligamento</div>
       <div class="section-subtitle">Qual foi a principal razão e como o processo foi conduzido.</div>
       <div class="field">
-        <label class="field-label">O desligamento foi motivado principalmente por: <span class="req">*</span></label>
+        <label class="field-label">O desligamento foi motivado principalmente por: <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Categoriza o motivo raiz do desligamento para identificar se a empresa tem mais problemas de performance, cultura ou estratégia.<span class="tip-score">Influência: Alimenta o gráfico de motivos e o relatório executivo. Não pontua no score de risco.</span></span></span></label>
         <div class="radio-grid" id="q-motivo">
           <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Performance técnica abaixo do esperado</div>
           <div class="radio-card" onclick="pickRadio(this,'q-motivo')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Performance comportamental / atitude</div>
@@ -799,7 +831,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O profissional recebeu feedbacks formais antes do desligamento? <span class="req">*</span></label>
+        <label class="field-label">O profissional recebeu feedbacks formais antes do desligamento? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Feedback formal é a principal ferramenta de desenvolvimento. Sua ausência indica que o profissional pode não ter tido chance de melhorar.<span class="tip-score">Influência: Sem feedback = +3 pontos de risco. Parcial = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-feedback">
           <div class="radio-card" onclick="pickRadio(this,'q-feedback')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, com registros formais e documentados</div>
           <div class="radio-card" onclick="pickRadio(this,'q-feedback')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — só conversas informais</div>
@@ -807,7 +839,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Existiu plano de melhoria (PIP) antes da decisão final? <span class="req">*</span></label>
+        <label class="field-label">Existiu plano de melhoria (PIP) antes da decisão final? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>O PIP formaliza que a empresa deu oportunidade real de melhoria antes de desligar. Sem PIP, o desligamento pode ter sido precipitado.<span class="tip-score">Influência: Sem PIP = +3 pontos. PIP informal = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-pip">
           <div class="radio-card" onclick="pickRadio(this,'q-pip')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, com acompanhamento estruturado</div>
           <div class="radio-card" onclick="pickRadio(this,'q-pip')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Tentativa informal, sem estrutura</div>
@@ -826,7 +858,7 @@
       <div class="section-title">Clareza de expectativas</div>
       <div class="section-subtitle">O profissional sabia o que era esperado dele?</div>
       <div class="field">
-        <label class="field-label">As expectativas da função estavam claras? <span class="req">*</span></label>
+        <label class="field-label">As expectativas da função estavam claras? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Se o profissional não sabia o que era esperado, a falha é do sistema, não da pessoa. Clareza de expectativas é base para performance.<span class="tip-score">Influência: Não claras = +2 pontos. Parcialmente = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-expectativas">
           <div class="radio-card" onclick="pickRadio(this,'q-expectativas')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Totalmente claras e documentadas</div>
           <div class="radio-card" onclick="pickRadio(this,'q-expectativas')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente claras</div>
@@ -834,7 +866,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O profissional entendia cada item abaixo:</label>
+        <label class="field-label">O profissional entendia cada item abaixo:<span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Detalha quais dimensões de expectativa estavam claras. Ajuda a priorizar: responsabilidades, entregas, cultura ou comunicação.<span class="tip-score">Influência: Não afeta o score diretamente, mas complementa a análise de clareza de expectativas.</span></span></span></label>
         <table class="matrix-table">
           <thead><tr><th>Item</th><th>Sim</th><th>Parcial</th><th>Não</th></tr></thead>
           <tbody>
@@ -857,7 +889,7 @@
       <div class="section-title">Sinais antecipados</div>
       <div class="section-subtitle">O sistema permitiu a detecção precoce de problemas?</div>
       <div class="field">
-        <label class="field-label">Houve sinais antecipados de que algo não estava funcionando? <span class="req">*</span></label>
+        <label class="field-label">Houve sinais antecipados de que algo não estava funcionando? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Se havia sinais claros e recorrentes, o sistema deveria ter agido mais cedo. Se surgiu de repente, pode indicar falta de visibilidade.<span class="tip-score">Influência: Não afeta o score diretamente, mas contextualiza a análise de tempo de reação.</span></span></span></label>
         <div class="radio-grid" id="q-sinais">
           <div class="radio-card" onclick="pickRadio(this,'q-sinais')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, sinais claros e recorrentes</div>
           <div class="radio-card" onclick="pickRadio(this,'q-sinais')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, mas sutis e difíceis de perceber</div>
@@ -865,19 +897,16 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Quais foram os principais sinais? <span>(selecione todos que se aplicam)</span></label>
-        <div class="check-grid" id="q-sinais-tipos">
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Baixa produtividade ou entregas atrasadas</div>
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Dificuldade de colaboração com o time</div>
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Problemas de comunicação</div>
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Qualidade técnica abaixo do esperado</div>
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Baixo engajamento ou comprometimento</div>
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Conflitos interpessoais</div>
-          <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Ausências frequentes</div>
+        <label class="field-label">Quanto tempo se passou entre a percepção dos primeiros sinais e a decisão de desligamento? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Mede a velocidade de reação da organização. Demora excessiva indica falha no sistema de acompanhamento. Reação muito rápida pode indicar decisão precipitada.<span class="tip-score">Influência: Mais de 6 meses = +2 pontos. 3 a 6 meses = +1 ponto. Menos de 1 mês = +1 ponto (possível precipitação).</span></span></span></label>
+        <div class="radio-grid" id="q-tempo-reacao">
+          <div class="radio-card" onclick="pickRadio(this,'q-tempo-reacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Menos de 1 mês</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-tempo-reacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>1 a 3 meses</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-tempo-reacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>3 a 6 meses</div>
+          <div class="radio-card" onclick="pickRadio(this,'q-tempo-reacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Mais de 6 meses</div>
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Esses sinais foram discutidos com o profissional quando apareceram? <span class="req">*</span></label>
+        <label class="field-label">Esses sinais foram discutidos com o profissional quando apareceram? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Perceber sinais sem agir é tão grave quanto não percebê-los. A comunicação precoce é essencial para dar chance de correção.<span class="tip-score">Influência: Não discutidos = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-sinais-discussao">
           <div class="radio-card" onclick="pickRadio(this,'q-sinais-discussao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, abordados prontamente</div>
           <div class="radio-card" onclick="pickRadio(this,'q-sinais-discussao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — com atraso ou de forma incompleta</div>
@@ -896,7 +925,7 @@
       <div class="section-title">Processo de integração</div>
       <div class="section-subtitle">O onboarding deu ao profissional as condições para ter sucesso?</div>
       <div class="field">
-        <label class="field-label">O onboarding desse profissional foi adequado? <span class="req">*</span></label>
+        <label class="field-label">O onboarding desse profissional foi adequado? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Um onboarding ruim pode condenar o profissional ao fracasso desde o início. É uma das maiores causas de desligamentos evitáveis.<span class="tip-score">Influência: Sem estrutura = +3 pontos. Parcial = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-onboarding">
           <div class="radio-card" onclick="pickRadio(this,'q-onboarding')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, bem estruturado com marcos e acompanhamento</div>
           <div class="radio-card" onclick="pickRadio(this,'q-onboarding')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — processo informal ou incompleto</div>
@@ -904,7 +933,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O profissional recebeu apoio (buddy/mentor) para se adaptar? <span class="req">*</span></label>
+        <label class="field-label">O profissional recebeu apoio (buddy/mentor) para se adaptar? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Buddy/mentor acelera a adaptação e reduz o isolamento. Sem esse apoio, o profissional absorve a cultura erraticamente.<span class="tip-score">Influência: Sem buddy = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-buddy">
           <div class="radio-card" onclick="pickRadio(this,'q-buddy')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, teve buddy/mentor e acompanhamento</div>
           <div class="radio-card" onclick="pickRadio(this,'q-buddy')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — apoio limitado</div>
@@ -912,7 +941,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O que poderia ter sido feito diferente no onboarding? <span>(opcional)</span></label>
+        <label class="field-label">O que poderia ter sido feito diferente no onboarding? <span>(opcional)</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Campo livre para capturar insights qualitativos sobre melhorias no onboarding. Pode revelar padrões não cobertos pelas opções fechadas.<span class="tip-score">Influência: Não afeta o score. Dados qualitativos para análise.</span></span></span></label>
         <textarea class="text-input" id="q-onb-obs" placeholder="Descreva melhorias identificadas..."></textarea>
       </div>
       <div class="validation-msg" id="val-5">⚠ Selecione uma opção em cada pergunta obrigatória.</div>
@@ -927,7 +956,7 @@
       <div class="section-title">Time e processo seletivo</div>
       <div class="section-subtitle">O ambiente e a contratação contribuíram para o problema?</div>
       <div class="field">
-        <label class="field-label">O ambiente do time influenciou o desempenho do profissional? <span class="req">*</span></label>
+        <label class="field-label">O ambiente do time influenciou o desempenho do profissional? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Se o ambiente dificultava, o desligamento pode ser sintoma de um problema coletivo, não individual.<span class="tip-score">Influência: Ambiente disfuncional = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-ambiente">
           <div class="radio-card" onclick="pickRadio(this,'q-ambiente')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Ajudava — ambiente saudável e colaborativo</div>
           <div class="radio-card" onclick="pickRadio(this,'q-ambiente')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Neutro — sem impacto positivo ou negativo</div>
@@ -935,7 +964,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Como você avalia a liderança do time neste caso? <span class="req">*</span></label>
+        <label class="field-label">Como você avalia a liderança do time neste caso? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>A qualidade da liderança é o fator #1 de retenção. Notas baixas indicam que o desligamento pode refletir falha de gestão, não do profissional.<span class="tip-score">Influência: Nota ≤ 2 = +2 pontos de risco.</span></span></span></label>
         <div class="scale-row" id="q-lideranca">
           <div class="scale-card" onclick="pickScale(this,'q-lideranca',1)">1</div>
           <div class="scale-card" onclick="pickScale(this,'q-lideranca',2)">2</div>
@@ -946,7 +975,7 @@
         <div class="scale-label-row"><span>Inadequada</span><span>Excelente</span></div>
       </div>
       <div class="field">
-        <label class="field-label">O perfil contratado era adequado para a função? <span class="req">*</span></label>
+        <label class="field-label">O perfil contratado era adequado para a função? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Se o perfil estava errado desde a contratação, o desligamento revela falha no processo seletivo, não na performance individual.<span class="tip-score">Influência: Erro na seleção = +3 pontos. Parcialmente alinhado = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-perfil">
           <div class="radio-card" onclick="pickRadio(this,'q-perfil')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, perfil correto para a função</div>
           <div class="radio-card" onclick="pickRadio(this,'q-perfil')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente alinhado</div>
@@ -954,7 +983,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Aspectos culturais/comportamentais foram avaliados na seleção? <span class="req">*</span></label>
+        <label class="field-label">Aspectos culturais/comportamentais foram avaliados na seleção? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Processos seletivos focados apenas no técnico aumentam o risco de desalinhamento cultural, que é uma das maiores causas de desligamento.<span class="tip-score">Influência: Foco apenas técnico = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-selecao-cultural">
           <div class="radio-card" onclick="pickRadio(this,'q-selecao-cultural')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, com avaliação cultural estruturada</div>
           <div class="radio-card" onclick="pickRadio(this,'q-selecao-cultural')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — só intuição do entrevistador</div>
@@ -973,7 +1002,7 @@
       <div class="section-title">Liderança e gestão</div>
       <div class="section-subtitle">Como era a relação do líder com o profissional e como as decisões foram tomadas?</div>
       <div class="field">
-        <label class="field-label">Existiam 1:1s (one-on-ones) com o líder direto? <span class="req">*</span></label>
+        <label class="field-label">Existiam 1:1s (one-on-ones) com o líder direto? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>1:1s são o principal canal de acompanhamento individual. Sem eles, problemas passam despercebidos até virar crise.<span class="tip-score">Influência: Sem 1:1s = +3 pontos. Eventuais = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-one-on-one">
           <div class="radio-card" onclick="pickRadio(this,'q-one-on-one')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim, semanais ou quinzenais com registro</div>
           <div class="radio-card" onclick="pickRadio(this,'q-one-on-one')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Eventualmente, sem frequência definida</div>
@@ -981,7 +1010,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O profissional tinha autonomia adequada para seu nível? <span class="req">*</span></label>
+        <label class="field-label">O profissional tinha autonomia adequada para seu nível? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Tanto microgerenciamento quanto abandono destroem performance. O equilíbrio de autonomia é essencial para o sucesso.<span class="tip-score">Influência: Microgerenciamento ou abandono = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-autonomia">
           <div class="radio-card" onclick="pickRadio(this,'q-autonomia')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — autonomia compatível com maturidade</div>
           <div class="radio-card" onclick="pickRadio(this,'q-autonomia')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Pouca — microgerenciamento excessivo</div>
@@ -989,7 +1018,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Havia segurança psicológica no time para levantar problemas? <span class="req">*</span></label>
+        <label class="field-label">Havia segurança psicológica no time para levantar problemas? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Sem segurança psicológica, problemas ficam escondidos até explodir. É o fator mais correlacionado com alta performance em times (Projeto Aristotle, Google).<span class="tip-score">Influência: Clima de medo = +3 pontos. Parcial = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-seg-psicologica">
           <div class="radio-card" onclick="pickRadio(this,'q-seg-psicologica')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — ambiente aberto para vulnerabilidade e erro</div>
           <div class="radio-card" onclick="pickRadio(this,'q-seg-psicologica')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcial — algumas pessoas se sentiam à vontade, outras não</div>
@@ -997,7 +1026,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Como a decisão de desligamento foi tomada? <span class="req">*</span></label>
+        <label class="field-label">Como a decisão de desligamento foi tomada? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Decisões baseadas em dados são mais justas e defensáveis. Decisões impulsivas geram precedentes ruins e perda de confiança no time.<span class="tip-score">Influência: Decisão impulsiva = +3 pontos. Baseada em percepção = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-decisao">
           <div class="radio-card" onclick="pickRadio(this,'q-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Baseada em dados, com histórico documentado</div>
           <div class="radio-card" onclick="pickRadio(this,'q-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Baseada em percepção, sem evidências claras</div>
@@ -1005,7 +1034,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O líder buscou apoio (RH, pares, SM/AM) antes de decidir? <span class="req">*</span></label>
+        <label class="field-label">O líder buscou apoio (RH, pares, SM/AM) antes de decidir? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Decisões unilaterais indicam falta de governança. Envolver RH e pares traz perspectiva e reduz vieses do gestor.<span class="tip-score">Influência: Decisão unilateral = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-apoio-decisao">
           <div class="radio-card" onclick="pickRadio(this,'q-apoio-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — envolveu RH, pares ou Scrum Master</div>
           <div class="radio-card" onclick="pickRadio(this,'q-apoio-decisao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — consultou superficialmente</div>
@@ -1024,7 +1053,7 @@
       <div class="section-title">Práticas ágeis e ritos</div>
       <div class="section-subtitle">Os ritos e práticas ágeis funcionaram como rede de proteção?</div>
       <div class="field">
-        <label class="field-label">As retrospectivas do time surfaceavam problemas reais? <span class="req">*</span></label>
+        <label class="field-label">As retrospectivas do time surfaceavam problemas reais? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Retros são a principal rede de proteção do ágil. Se não surfaceavam problemas, o time operava às cegas e os sinais se acumularam.<span class="tip-score">Influência: Sem retros = +2 pontos. Superficiais = +1 ponto.</span></span></span></label>
         <div class="radio-grid" id="q-retros">
           <div class="radio-card" onclick="pickRadio(this,'q-retros')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — retros frequentes com ações concretas</div>
           <div class="radio-card" onclick="pickRadio(this,'q-retros')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Retros existiam mas eram superficiais</div>
@@ -1032,7 +1061,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Os impedimentos do profissional eram tratados pelo time/líder? <span class="req">*</span></label>
+        <label class="field-label">Os impedimentos do profissional eram tratados pelo time/líder? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Impedimentos ignorados comprometem entregas e geram frustração. Se o sistema não removia bloqueios, o profissional foi sabotado silenciosamente.<span class="tip-score">Influência: Impedimentos ignorados = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-impedimentos">
           <div class="radio-card" onclick="pickRadio(this,'q-impedimentos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — impedimentos removidos rapidamente</div>
           <div class="radio-card" onclick="pickRadio(this,'q-impedimentos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — alguns ficavam tempo demais sem resolução</div>
@@ -1040,7 +1069,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">O profissional participava ativamente dos ritos ágeis? <span class="req">*</span></label>
+        <label class="field-label">O profissional participava ativamente dos ritos ágeis? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Baixa participação em ritos pode indicar desengajamento, mas também pode refletir ritos mal conduzidos ou sem valor percebido.<span class="tip-score">Influência: Não afeta o score diretamente, mas contextualiza o engajamento.</span></span></span></label>
         <div class="radio-grid" id="q-participacao-ritos">
           <div class="radio-card" onclick="pickRadio(this,'q-participacao-ritos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — engajado em dailies, plannings, retros</div>
           <div class="radio-card" onclick="pickRadio(this,'q-participacao-ritos')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — presente mas passivo</div>
@@ -1048,7 +1077,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">A velocidade/capacidade do time era respeitada na priorização? <span class="req">*</span></label>
+        <label class="field-label">A velocidade/capacidade do time era respeitada na priorização? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Sobrecarga constante leva a burnout e queda de performance. Se o time estava sobrecarregado, a culpa não é do indivíduo.<span class="tip-score">Influência: Sobrecarga constante = +2 pontos de risco.</span></span></span></label>
         <div class="radio-grid" id="q-capacidade">
           <div class="radio-card" onclick="pickRadio(this,'q-capacidade')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — planejamento respeitava a capacidade</div>
           <div class="radio-card" onclick="pickRadio(this,'q-capacidade')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Parcialmente — pressão eventual por scope creep</div>
@@ -1056,7 +1085,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Existia um Scrum Master ou Agile Master atuando no time? <span class="req">*</span></label>
+        <label class="field-label">Existia um Scrum Master ou Agile Master atuando no time? <span class="req">*</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>SM/AM ativo atua como rede de proteção: facilita comunicação, remove impedimentos e cria ambiente para melhoria contínua.<span class="tip-score">Influência: Sem SM/AM = +1 ponto de risco.</span></span></span></label>
         <div class="radio-grid" id="q-sm-atuacao">
           <div class="radio-card" onclick="pickRadio(this,'q-sm-atuacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — com atuação ativa em coaching e facilitação</div>
           <div class="radio-card" onclick="pickRadio(this,'q-sm-atuacao')"><div class="radio-dot"><div class="radio-dot-inner"></div></div>Sim — mas com foco apenas em processos/cerimoniais</div>
@@ -1075,7 +1104,7 @@
       <div class="section-title">Aprendizados e prioridades</div>
       <div class="section-subtitle">O que este caso nos ensina sobre o sistema?</div>
       <div class="field">
-        <label class="field-label">Que áreas precisam de melhoria? <span>(selecione todas que se aplicam)</span></label>
+        <label class="field-label">Que áreas precisam de melhoria? <span>(selecione todas que se aplicam)</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Permite ao gestor indicar, na visão dele, quais áreas precisam evoluir. Cruzamos isso com os dados objetivos para priorizar ações.<span class="tip-score">Influência: Não afeta o score. Alimenta o gráfico de áreas de melhoria.</span></span></span></label>
         <div class="check-grid" id="q-melhorias">
           <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Processo de contratação / critérios de seleção</div>
           <div class="check-card" onclick="pickCheck(this)"><div class="check-box"></div>Onboarding e integração</div>
@@ -1090,7 +1119,7 @@
         </div>
       </div>
       <div class="field">
-        <label class="field-label">Observações finais <span>(opcional)</span></label>
+        <label class="field-label">Observações finais <span>(opcional)</span><span class="info-tip" onclick="this.classList.toggle('active')">i<span class="tip-text"><span class="tip-title">Por que perguntamos?</span>Espaço aberto para contexto adicional que não coube nas perguntas estruturadas. Pode revelar insights únicos sobre o caso.<span class="tip-score">Influência: Não afeta o score. Dados qualitativos para relatório.</span></span></span></label>
         <textarea class="text-input" id="q-obs" placeholder="Qualquer contexto adicional relevante..."></textarea>
       </div>
       <div class="form-nav">
@@ -1205,8 +1234,8 @@
           <div class="chart-canvas-wrap" style="height:200px;"><canvas id="chart-melhorias"></canvas></div>
         </div>
         <div class="chart-card wide">
-          <div class="chart-title">Sinais mais frequentes</div>
-          <div class="chart-sub">Quais sinais apareceram antes dos desligamentos</div>
+          <div class="chart-title">Tempo de reação</div>
+          <div class="chart-sub">Quanto tempo entre os primeiros sinais e a decisão de desligamento</div>
           <div class="chart-canvas-wrap" style="height:180px;"><canvas id="chart-sinais"></canvas></div>
         </div>
       </div>
@@ -1343,6 +1372,7 @@ function mapResponse(r) {
     matrizResp: r.matriz_resp ?? r.matrizResp ?? 0, matrizEntrega: r.matriz_entrega ?? r.matrizEntrega ?? 0,
     matrizCultura: r.matriz_cultura ?? r.matrizCultura ?? 0, matrizComm: r.matriz_comm ?? r.matrizComm ?? 0,
     sinais: r.sinais, sinaisTipos: r.sinais_tipos || r.sinaisTipos || [],
+    tempoReacao: r.tempo_reacao || r.tempoReacao || '',
     sinaisDiscussao: r.sinais_discussao || r.sinaisDiscussao,
     onboarding: r.onboarding, buddy: r.buddy, onbObs: r.onb_obs || r.onbObs,
     ambiente: r.ambiente, lideranca: r.lideranca || 3, perfil: r.perfil,
@@ -1784,7 +1814,7 @@ const MOCK_SEED = [
     expectativas: 'Parcialmente claras',
     matrizResp: 1, matrizEntrega: 2, matrizCultura: 1, matrizComm: 2,
     sinais: 'Sim, sinais claros e recorrentes',
-    sinaisTipos: ['Baixa produtividade ou entregas atrasadas','Problemas de comunicação','Baixo engajamento ou comprometimento'],
+    sinaisTipos: [], tempoReacao: 'Mais de 6 meses',
     sinaisDiscussao: 'Não foram discutidos',
     onboarding: 'Não — o profissional foi inserido sem estrutura',
     buddy: 'Não — foi deixado por conta própria',
@@ -1812,7 +1842,7 @@ const MOCK_SEED = [
     expectativas: 'Totalmente claras e documentadas',
     matrizResp: 0, matrizEntrega: 0, matrizCultura: 1, matrizComm: 0,
     sinais: 'Sim, mas sutis e difíceis de perceber',
-    sinaisTipos: ['Dificuldade de colaboração com o time','Conflitos interpessoais'],
+    sinaisTipos: [], tempoReacao: '1 a 3 meses',
     sinaisDiscussao: 'Sim, abordados prontamente',
     onboarding: 'Sim, bem estruturado com marcos e acompanhamento',
     buddy: 'Sim, teve buddy/mentor e acompanhamento',
@@ -1840,7 +1870,7 @@ const MOCK_SEED = [
     expectativas: 'Parcialmente claras',
     matrizResp: 0, matrizEntrega: 1, matrizCultura: 2, matrizComm: 1,
     sinais: 'Sim, sinais claros e recorrentes',
-    sinaisTipos: ['Problemas de comunicação','Qualidade técnica abaixo do esperado','Baixo engajamento ou comprometimento'],
+    sinaisTipos: [], tempoReacao: '3 a 6 meses',
     sinaisDiscussao: 'Não foram discutidos',
     onboarding: 'Parcialmente — processo informal ou incompleto',
     buddy: 'Parcialmente — apoio limitado',
@@ -1868,7 +1898,7 @@ const MOCK_SEED = [
     expectativas: 'Não estavam claras',
     matrizResp: 2, matrizEntrega: 1, matrizCultura: 0, matrizComm: 2,
     sinais: 'Não — surgiu de forma repentina',
-    sinaisTipos: [],
+    sinaisTipos: [], tempoReacao: 'Menos de 1 mês',
     sinaisDiscussao: 'Não foram discutidos',
     onboarding: 'Parcialmente — processo informal ou incompleto',
     buddy: 'Parcialmente — apoio limitado',
@@ -1896,7 +1926,7 @@ const MOCK_SEED = [
     expectativas: 'Totalmente claras e documentadas',
     matrizResp: 0, matrizEntrega: 0, matrizCultura: 0, matrizComm: 0,
     sinais: 'Sim, mas sutis e difíceis de perceber',
-    sinaisTipos: ['Baixo engajamento ou comprometimento'],
+    sinaisTipos: [], tempoReacao: '1 a 3 meses',
     sinaisDiscussao: 'Sim, abordados prontamente',
     onboarding: 'Sim, bem estruturado com marcos e acompanhamento',
     buddy: 'Sim, teve buddy/mentor e acompanhamento',
@@ -2001,7 +2031,7 @@ const VALIDATIONS = {
   },
   2: () => getRadio('q-motivo') && getRadio('q-feedback') && getRadio('q-pip'),
   3: () => !!getRadio('q-expectativas'),
-  4: () => getRadio('q-sinais') && getRadio('q-sinais-discussao'),
+  4: () => getRadio('q-sinais') && getRadio('q-tempo-reacao') && getRadio('q-sinais-discussao'),
   5: () => getRadio('q-onboarding') && getRadio('q-buddy'),
   6: () => getRadio('q-ambiente') && scales['q-lideranca'] && getRadio('q-perfil') && getRadio('q-selecao-cultural'),
   7: () => getRadio('q-one-on-one') && getRadio('q-autonomia') && getRadio('q-seg-psicologica') && getRadio('q-decisao') && getRadio('q-apoio-decisao'),
@@ -2072,6 +2102,10 @@ function calcScore(d) {
   if (d.selecaoCultural.includes('técnico')) s += 2;
   if (d.lideranca <= 2) s += 2;
   if (d.sinaisDiscussao.includes('Não')) s += 2;
+  // Tempo de reação
+  if (d.tempoReacao && d.tempoReacao.includes('Mais de 6')) s += 2;
+  else if (d.tempoReacao && d.tempoReacao.includes('3 a 6')) s += 1;
+  else if (d.tempoReacao && d.tempoReacao.includes('Menos de 1')) s += 1;
   // Liderança e gestão
   if (d.oneOnOne && d.oneOnOne.includes('Não existiam')) s += 3;
   else if (d.oneOnOne && d.oneOnOne.includes('Eventualmente')) s += 1;
@@ -2113,7 +2147,8 @@ async function submitForm() {
     matrizCultura: matrices['m-cultura'] ?? 0,
     matrizComm: matrices['m-comm'] ?? 0,
     sinais: getRadio('q-sinais'),
-    sinaisTipos: getChecks('q-sinais-tipos'),
+    sinaisTipos: [],
+    tempoReacao: getRadio('q-tempo-reacao'),
     sinaisDiscussao: getRadio('q-sinais-discussao'),
     onboarding: getRadio('q-onboarding'),
     buddy: getRadio('q-buddy'),
@@ -2239,12 +2274,12 @@ function shareFormLink() {
 // ——— EXPORT CSV ———
 function exportCSV() {
   if (responses.length === 0) return;
-  const headers = ['Gestor','Profissional','Time','Período','Motivo','Feedback','PIP','Expectativas','Onboarding','Buddy','Ambiente','Liderança','Perfil','Seleção Cultural','Sinais','Sinais Tipos','Sinais Discussão','Melhorias','Score','Risco','Data'];
+  const headers = ['Gestor','Profissional','Time','Período','Motivo','Feedback','PIP','Expectativas','Onboarding','Buddy','Ambiente','Liderança','Perfil','Seleção Cultural','Sinais','Tempo de Reação','Sinais Discussão','Melhorias','Score','Risco','Data'];
   const rows = responses.map(r => [
     r.gestor, r.funcionario || '—', r.time, r.periodo, r.motivo, r.feedback, r.pip,
     r.expectativas, r.onboarding, r.buddy, r.ambiente,
     r.lideranca, r.perfil, r.selecaoCultural, r.sinais,
-    (r.sinaisTipos||[]).join('; '), r.sinaisDiscussao,
+    r.tempoReacao || '—', r.sinaisDiscussao,
     (r.melhorias||[]).join('; '), r.score, r.risk, r.ts
   ]);
   const csvContent = [headers, ...rows]
@@ -2502,14 +2537,14 @@ function renderCharts(data) {
     options: { ...CHART_DEFAULTS, indexAxis: 'y', scales: { x: { ticks: { color: '#7aa3be', font: { size: 11 }, stepSize: 1 }, grid: { color: '#38d2b410' } }, y: { ticks: { color: '#7aa3be', font: { size: 12 } }, grid: { color: '#38d2b410' } } } }
   });
 
-  // Sinais (NOVO)
-  const sinaisLabels = ['Baixa produtividade','Colaboração','Comunicação','Qualidade técnica','Engajamento','Conflitos','Ausências'];
-  const sinaisKeys = ['produtividade','colaboração','comunicação','técnica','engajamento','Conflitos','Ausências'];
-  const sinaisData = sinaisKeys.map(k => data.reduce((acc, r) => acc + ((r.sinaisTipos||[]).some(s => s.toLowerCase().includes(k.toLowerCase())) ? 1 : 0), 0));
+  // Tempo de Reação
+  const tempoLabels = ['< 1 mês','1-3 meses','3-6 meses','> 6 meses'];
+  const tempoKeys = ['Menos de 1','1 a 3','3 a 6','Mais de 6'];
+  const tempoData = tempoKeys.map(k => data.filter(r => r.tempoReacao && r.tempoReacao.includes(k)).length);
   charts.sinais = new Chart(document.getElementById('chart-sinais'), {
     type: 'bar',
-    data: { labels: sinaisLabels, datasets: [{ data: sinaisData, backgroundColor: '#f0c04080', borderRadius: 6, borderWidth: 0, hoverBackgroundColor: '#f0c040' }] },
-    options: { ...CHART_DEFAULTS, indexAxis: 'y', scales: { x: { ticks: { color: '#7aa3be', font: { size: 11 }, stepSize: 1 }, grid: { color: '#38d2b410' } }, y: { ticks: { color: '#7aa3be', font: { size: 12 } }, grid: { color: '#38d2b410' } } } }
+    data: { labels: tempoLabels, datasets: [{ data: tempoData, backgroundColor: ['#e8505080','#f0c04080','#38d2b480','#6dd84a80'], borderRadius: 6, borderWidth: 0, hoverBackgroundColor: ['#e85050','#f0c040','#38d2b4','#6dd84a'] }] },
+    options: { ...CHART_DEFAULTS, scales: { x: { ticks: { color: '#7aa3be', font: { size: 11 } }, grid: { color: '#38d2b410' } }, y: { ticks: { color: '#7aa3be', font: { size: 11 }, stepSize: 1 }, grid: { color: '#38d2b410' } } } }
   });
 }
 

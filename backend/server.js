@@ -134,7 +134,8 @@ app.get('/api/responses', authMiddleware, async (req, res) => {
   const data = rows.map(r => ({
     ...r,
     sinais_tipos: r.sinais_tipos ? JSON.parse(r.sinais_tipos) : [],
-    melhorias: r.melhorias ? JSON.parse(r.melhorias) : []
+    melhorias: r.melhorias ? JSON.parse(r.melhorias) : [],
+    tempo_reacao: r.tempo_reacao || ''
   }));
   res.json(data);
 });
@@ -149,9 +150,9 @@ app.post('/api/responses', async (req, res) => {
       onboarding, buddy, onb_obs, ambiente, lideranca, perfil, selecao_cultural,
       one_on_one, autonomia, seg_psicologica, decisao, apoio_decisao,
       retros, impedimentos, participacao_ritos, capacidade, sm_atuacao,
-      melhorias, obs, score, risk
+      melhorias, obs, score, risk, tempo_reacao
     ) VALUES (
-      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36
+      $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37
     ) RETURNING *`,
     [
       r.gestor, r.funcionario, r.time, r.periodo, r.motivo, r.feedback, r.pip, r.expectativas,
@@ -160,7 +161,8 @@ app.post('/api/responses', async (req, res) => {
       r.onboarding, r.buddy, r.onbObs, r.ambiente, r.lideranca || 3, r.perfil, r.selecaoCultural,
       r.oneOnOne, r.autonomia, r.segPsicologica, r.decisao, r.apoioDecisao,
       r.retros, r.impedimentos, r.participacaoRitos, r.capacidade, r.smAtuacao,
-      JSON.stringify(r.melhorias || []), r.obs, r.score || 0, r.risk || 'baixo'
+      JSON.stringify(r.melhorias || []), r.obs, r.score || 0, r.risk || 'baixo',
+      r.tempoReacao || ''
     ]
   );
   res.json(rows[0]);
@@ -196,9 +198,9 @@ app.post('/api/responses/import', authMiddleware, adminOnly, async (req, res) =>
         onboarding, buddy, onb_obs, ambiente, lideranca, perfil, selecao_cultural,
         one_on_one, autonomia, seg_psicologica, decisao, apoio_decisao,
         retros, impedimentos, participacao_ritos, capacidade, sm_atuacao,
-        melhorias, obs, score, risk
+        melhorias, obs, score, risk, tempo_reacao
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35,$36,$37
       )`,
       [
         r.gestor, r.funcionario, r.time || r.time_area, r.periodo, r.motivo, r.feedback, r.pip, r.expectativas,
@@ -211,7 +213,8 @@ app.post('/api/responses/import', authMiddleware, adminOnly, async (req, res) =>
         r.decisao, r.apoioDecisao || r.apoio_decisao,
         r.retros, r.impedimentos, r.participacaoRitos || r.participacao_ritos,
         r.capacidade, r.smAtuacao || r.sm_atuacao,
-        JSON.stringify(r.melhorias || []), r.obs, r.score || 0, r.risk || 'baixo'
+        JSON.stringify(r.melhorias || []), r.obs, r.score || 0, r.risk || 'baixo',
+        r.tempoReacao || r.tempo_reacao || ''
       ]
     );
     count++;

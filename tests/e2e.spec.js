@@ -36,7 +36,7 @@ const MOCK_CASES = [
     expectativas: 1,  // Parcialmente claras
     matrix: { resp: 1, entrega: 2, cultura: 1, comm: 2 },
     sinais: 0,        // Sinais claros
-    sinaisTipos: [0, 2, 4],   // Produtividade, Comunicação, Engajamento
+    tempoReacao: 3,   // Mais de 6 meses
     sinaisDiscussao: 2,       // Não foram discutidos
     onboarding: 2,    // Sem estrutura
     buddy: 2,         // Por conta própria
@@ -70,7 +70,7 @@ const MOCK_CASES = [
     expectativas: 0,  // Totalmente claras
     matrix: { resp: 0, entrega: 0, cultura: 1, comm: 0 },
     sinais: 1,        // Sinais sutis
-    sinaisTipos: [1, 5],  // Colaboração, Conflitos
+    tempoReacao: 1,   // 1 a 3 meses
     sinaisDiscussao: 0,   // Abordados prontamente
     onboarding: 0,    // Bem estruturado
     buddy: 0,         // Teve buddy
@@ -104,7 +104,7 @@ const MOCK_CASES = [
     expectativas: 1,  // Parcialmente
     matrix: { resp: 0, entrega: 1, cultura: 2, comm: 1 },
     sinais: 0,        // Sinais claros
-    sinaisTipos: [2, 3, 4], // Comunicação, Qualidade, Engajamento
+    tempoReacao: 2,   // 3 a 6 meses
     sinaisDiscussao: 2,     // Não foram discutidos
     onboarding: 1,    // Parcial
     buddy: 1,         // Apoio limitado
@@ -270,11 +270,9 @@ test.describe('Formulário — Preenchimento e Submissão', () => {
       const sinais = page.locator('#q-sinais .radio-card');
       await sinais.nth(mockCase.sinais).click();
 
-      const sinaisTipos = page.locator('#q-sinais-tipos .check-card');
-      for (const idx of mockCase.sinaisTipos) {
-        await sinaisTipos.nth(idx).click();
-        await expect(sinaisTipos.nth(idx)).toHaveClass(/sel/);
-      }
+      const sinaisTipos = page.locator('#q-tempo-reacao .radio-card');
+      await sinaisTipos.nth(mockCase.tempoReacao).click();
+      await expect(sinaisTipos.nth(mockCase.tempoReacao)).toHaveClass(/sel/);
 
       const sinaisDisc = page.locator('#q-sinais-discussao .radio-card');
       await sinaisDisc.nth(mockCase.sinaisDiscussao).click();
@@ -399,9 +397,9 @@ test.describe('Dashboard — Visualização com dados mockados', () => {
     await loginAsAdmin(page);
     // Injetar 3 casos mockados no localStorage
     const mockData = [
-      { id: 1001, gestor: 'Maria Fernanda', funcionario: 'Lucas Oliveira', time: 'Time Condado', periodo: 'Jan 2026', motivo: 'Performance técnica abaixo do esperado', feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria', expectativas: 'Parcialmente claras', onboarding: 'Não — o profissional foi inserido sem estrutura', buddy: 'Não — foi deixado por conta própria', ambiente: 'Dificultava — ambiente com tensões ou problemas', lideranca: 2, perfil: 'Não — houve erro no processo seletivo', selecaoCultural: 'Não — foco apenas técnico', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Baixa produtividade ou entregas atrasadas', 'Problemas de comunicação', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Não foram discutidos', melhorias: ['Processo de contratação / critérios de seleção', 'Onboarding e integração', 'Comunicação e feedback contínuo', 'Liderança e gestão do time'], obs: '', score: 22, risk: 'alto', ts: '17/03/2026' },
-      { id: 1002, gestor: 'Carlos Eduardo', funcionario: 'Rafaela Santos', time: 'Engenharia Backend', periodo: 'Fev 2026', motivo: 'Performance comportamental / atitude', feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado', expectativas: 'Totalmente claras e documentadas', onboarding: 'Sim, bem estruturado com marcos e acompanhamento', buddy: 'Sim, teve buddy/mentor e acompanhamento', ambiente: 'Ajudava — ambiente saudável e colaborativo', lideranca: 4, perfil: 'Parcialmente alinhado', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, mas sutis e difíceis de perceber', sinaisTipos: ['Dificuldade de colaboração com o time', 'Conflitos interpessoais'], sinaisDiscussao: 'Sim, abordados prontamente', melhorias: ['Cultura organizacional'], obs: '', score: 2, risk: 'baixo', ts: '17/03/2026' },
-      { id: 1003, gestor: 'Ana Beatriz', funcionario: 'Lucas Oliveira', time: 'Produto', periodo: 'Mar 2026', motivo: 'Desalinhamento cultural', feedback: 'Parcialmente — só conversas informais', pip: 'Tentativa informal, sem estrutura', expectativas: 'Parcialmente claras', onboarding: 'Parcialmente — processo informal ou incompleto', buddy: 'Parcialmente — apoio limitado', ambiente: 'Neutro — sem impacto positivo ou negativo', lideranca: 3, perfil: 'Sim, perfil correto para a função', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: ['Problemas de comunicação', 'Qualidade técnica abaixo do esperado', 'Baixo engajamento ou comprometimento'], sinaisDiscussao: 'Parcialmente — com atraso ou de forma incompleta', melhorias: ['Clareza de expectativas do cargo', 'Comunicação e feedback contínuo', 'Acompanhamento de performance', 'Cultura organizacional'], obs: '', score: 7, risk: 'medio', ts: '17/03/2026' }
+      { id: 1001, gestor: 'Maria Fernanda', funcionario: 'Lucas Oliveira', time: 'Time Condado', periodo: 'Jan 2026', motivo: 'Performance técnica abaixo do esperado', feedback: 'Não houve feedbacks formais', pip: 'Não houve plano de melhoria', expectativas: 'Parcialmente claras', onboarding: 'Não — o profissional foi inserido sem estrutura', buddy: 'Não — foi deixado por conta própria', ambiente: 'Dificultava — ambiente com tensões ou problemas', lideranca: 2, perfil: 'Não — houve erro no processo seletivo', selecaoCultural: 'Não — foco apenas técnico', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: [], tempoReacao: 'Mais de 6 meses', sinaisDiscussao: 'Não foram discutidos', melhorias: ['Processo de contratação / critérios de seleção', 'Onboarding e integração', 'Comunicação e feedback contínuo', 'Liderança e gestão do time'], obs: '', score: 22, risk: 'alto', ts: '17/03/2026' },
+      { id: 1002, gestor: 'Carlos Eduardo', funcionario: 'Rafaela Santos', time: 'Engenharia Backend', periodo: 'Fev 2026', motivo: 'Performance comportamental / atitude', feedback: 'Sim, com registros formais e documentados', pip: 'Sim, com acompanhamento estruturado', expectativas: 'Totalmente claras e documentadas', onboarding: 'Sim, bem estruturado com marcos e acompanhamento', buddy: 'Sim, teve buddy/mentor e acompanhamento', ambiente: 'Ajudava — ambiente saudável e colaborativo', lideranca: 4, perfil: 'Parcialmente alinhado', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, mas sutis e difíceis de perceber', sinaisTipos: [], tempoReacao: '1 a 3 meses', sinaisDiscussao: 'Sim, abordados prontamente', melhorias: ['Cultura organizacional'], obs: '', score: 2, risk: 'baixo', ts: '17/03/2026' },
+      { id: 1003, gestor: 'Ana Beatriz', funcionario: 'Lucas Oliveira', time: 'Produto', periodo: 'Mar 2026', motivo: 'Desalinhamento cultural', feedback: 'Parcialmente — só conversas informais', pip: 'Tentativa informal, sem estrutura', expectativas: 'Parcialmente claras', onboarding: 'Parcialmente — processo informal ou incompleto', buddy: 'Parcialmente — apoio limitado', ambiente: 'Neutro — sem impacto positivo ou negativo', lideranca: 3, perfil: 'Sim, perfil correto para a função', selecaoCultural: 'Parcialmente — só intuição do entrevistador', sinais: 'Sim, sinais claros e recorrentes', sinaisTipos: [], tempoReacao: '3 a 6 meses', sinaisDiscussao: 'Parcialmente — com atraso ou de forma incompleta', melhorias: ['Clareza de expectativas do cargo', 'Comunicação e feedback contínuo', 'Acompanhamento de performance', 'Cultura organizacional'], obs: '', score: 7, risk: 'medio', ts: '17/03/2026' }
     ];
     await page.evaluate((data) => {
       localStorage.setItem('deslig-responses', JSON.stringify(data));
